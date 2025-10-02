@@ -1,0 +1,101 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\User;
+use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+use Illuminate\Database\Seeder;
+
+class UserSeeder extends Seeder
+{
+    /**
+     * Run the database seeds.
+     */
+    public function run(): void
+    {
+        // Test User 1: Beginner trying to lose weight
+        User::create([
+            'whatsapp_number' => '31612345001',
+            'name' => 'John Beginner',
+            'gender' => 'male',
+            'age' => 28,
+            'height_cm' => 175.0,
+            'current_weight_kg' => 85.0,
+            'target_weight_kg' => 75.0,
+            'fitness_goal' => 'lose_weight',
+            'experience_level' => 'beginner',
+            'preferences' => [
+                'workout_days' => ['monday', 'wednesday', 'friday'],
+                'preferred_time' => 'morning',
+                'equipment_access' => ['dumbbells', 'bodyweight'],
+            ],
+            'streak_days' => 0,
+            'is_active' => true,
+            'onboarded_at' => now(),
+        ]);
+
+        // Test User 2: Intermediate building muscle
+        User::create([
+            'whatsapp_number' => '31612345002',
+            'name' => 'Sarah Lifter',
+            'gender' => 'female',
+            'age' => 32,
+            'height_cm' => 165.0,
+            'current_weight_kg' => 62.0,
+            'target_weight_kg' => 65.0,
+            'fitness_goal' => 'build_muscle',
+            'experience_level' => 'intermediate',
+            'preferences' => [
+                'workout_days' => ['monday', 'tuesday', 'thursday', 'saturday'],
+                'preferred_time' => 'evening',
+                'equipment_access' => ['full_gym'],
+            ],
+            'streak_days' => 12,
+            'last_workout_date' => today()->subDay(),
+            'is_active' => true,
+            'onboarded_at' => now()->subWeeks(2),
+        ]);
+
+        // Test User 3: Advanced strength training
+        User::create([
+            'whatsapp_number' => '31612345003',
+            'name' => 'Mike Strong',
+            'gender' => 'male',
+            'age' => 35,
+            'height_cm' => 182.0,
+            'current_weight_kg' => 90.0,
+            'target_weight_kg' => 90.0,
+            'fitness_goal' => 'strength',
+            'experience_level' => 'advanced',
+            'preferences' => [
+                'workout_days' => ['monday', 'wednesday', 'friday', 'saturday'],
+                'preferred_time' => 'afternoon',
+                'equipment_access' => ['full_gym', 'specialty_bars'],
+            ],
+            'streak_days' => 45,
+            'last_workout_date' => today(),
+            'is_active' => true,
+            'onboarded_at' => now()->subMonths(3),
+        ]);
+
+        // Test User 4: Inactive user (for testing reactivation)
+        User::create([
+            'whatsapp_number' => '31612345004',
+            'name' => 'Lazy Larry',
+            'gender' => 'male',
+            'age' => 40,
+            'height_cm' => 178.0,
+            'current_weight_kg' => 95.0,
+            'target_weight_kg' => 80.0,
+            'fitness_goal' => 'lose_weight',
+            'experience_level' => 'beginner',
+            'preferences' => null,
+            'streak_days' => 0,
+            'last_workout_date' => today()->subWeeks(4),
+            'is_active' => false,
+            'onboarded_at' => now()->subMonths(2),
+        ]);
+
+        $this->command->info('✅ Created 4 test users');
+    }
+}
