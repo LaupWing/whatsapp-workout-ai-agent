@@ -77,4 +77,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(ProgressMetric::class);
     }
+
+    public function aiInteractions()
+    {
+        return $this->hasMany(AIInteraction::class);
+    }
 }
