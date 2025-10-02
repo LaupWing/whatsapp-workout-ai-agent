@@ -27,6 +27,9 @@ return new class extends Migration
             $table->text('error_message')->nullable(); // If it failed, why?
             $table->json('tool_calls')->nullable(); // Which tools/functions were called
             $table->timestamps();
+
+            $table->index(['user_id', 'created_at']);
+            $table->index('agent_name');
         });
     }
 

@@ -25,6 +25,8 @@ return new class extends Migration
             $table->enum('energy_level', ['low', 'medium', 'high'])->nullable(); // User reported
             $table->integer('rating')->nullable(); // 1-5 stars, how did they feel?
             $table->timestamps();
+
+            $table->index(['user_id', 'workout_date']);
         });
     }
 

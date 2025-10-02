@@ -26,6 +26,9 @@ return new class extends Migration
             $table->timestamp('delivered_at')->nullable(); // WhatsApp delivery confirmation
             $table->timestamp('read_at')->nullable(); // WhatsApp read receipt
             $table->timestamps();
+
+            $table->index(['user_id', 'created_at']);
+            $table->index('whatsapp_message_id');
         });
     }
 

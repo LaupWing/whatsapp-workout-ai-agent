@@ -25,6 +25,9 @@ return new class extends Migration
             $table->boolean('is_warmup')->default(false);
             $table->boolean('is_pr')->default(false); // Personal Record flag
             $table->timestamps();
+
+            $table->index(['workout_id', 'exercise_id']);
+            $table->index('is_pr');
         });
     }
 
