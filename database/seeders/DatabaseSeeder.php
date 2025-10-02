@@ -14,15 +14,20 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        $this->call([
+            ExerciseSeeder::class,
+            UserSeeder::class,
+            WorkoutSeeder::class,
+        ]);
 
-        User::firstOrCreate(
-            ['email' => 'test@example.com'],
-            [
-                'name' => 'Test User',
-                'password' => Hash::make('password'),
-                'email_verified_at' => now(),
-            ]
-        );
+        $this->command->info('');
+        $this->command->info('🎉 Database seeded successfully!');
+        $this->command->info('');
+        $this->command->info('📱 Test Users Created:');
+        $this->command->info('  1. John Beginner (31612345001) - Lose weight, Beginner');
+        $this->command->info('  2. Sarah Lifter (31612345002) - Build muscle, Intermediate ⭐ HAS WORKOUTS');
+        $this->command->info('  3. Mike Strong (31612345003) - Strength, Advanced');
+        $this->command->info('  4. Lazy Larry (31612345004) - Inactive user');
+        $this->command->info('');
     }
 }
