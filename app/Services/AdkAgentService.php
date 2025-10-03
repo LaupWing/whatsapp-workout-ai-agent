@@ -175,4 +175,81 @@ class AdkAgentService
             'last_workout' => $user->last_workout_date?->format('Y-m-d'),
         ];
     }
+
+    /**
+     * Extract the final text response from ADK events
+     */
+    private function extractFinalResponse(array $events): string
+    {
+        // Loop backwards to find the last text response from the model
+        for ($i = count($events) - 1; $i >= 0; $i--) {
+            $event = $events[$i];
+
+            if (
+                isset($event['content']['role']) &&
+                $event['content']['role'] === 'model' &&
+                isset($event['content']['parts'])
+            ) {
+                foreach ($event['content']['parts'] as $part) {
+                    if (isset($part['text'])) {
+                        return $part['text'];
+                    }
+                }
+            }
+        }
+
+        return 'No response generated';
+    }
+
+    /**
+     * Extract agent name from events
+     */
+    private function extractAgentName(array $events): string
+    {
+        foreach ($events as $event) {
+            if (isset($event['author'])) {
+                return $event['author'];
+            }
+        }
+
+        return 'unknown';
+    }
+
+    /**
+     * Extract tool calls from events
+     */
+    private function extractToolCalls(array $events): ?array
+    {
+        $toolCalls = [];
+
+        foreach ($events as $event) {
+            if (isset($event['content']['parts'])) {
+                foreach ($event['content']['parts'] as $part) {
+                    if (isset($part['functionCall'])) {
+                        $toolCalls[] = [
+                            'name' => $part['functionCall']['name'],
+                            'args' => $part['functionCall']['args'] ?? null,
+                        ];
+                    }
+                }
+            }
+        }
+
+        return !empty($toolCalls) ? $toolCalls : null;
+    }
+
+    /**
+     * Extract token count from events
+     */
+    private function extractTokenCount(array $events): ?int
+    {
+        // Find the last event with usage metadata
+        for ($i = count($events) - 1; $i >= 0; $i--) {
+            if (isset($events[$i]['usageMetadata']['totalTokenCount'])) {
+                return $events[$i]['usageMetadata']['totalTokenCount'];
+            }
+        }
+
+        return null;
+    }
 }
