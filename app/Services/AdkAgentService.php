@@ -17,7 +17,6 @@ class AdkAgentService
     public function __construct()
     {
         $this->adkUrl = config('services.adk.api_url');
-        $this->apiKey = config('services.adk.api_key');
         $this->apiAppName = config('services.adk.api_app_name');
     }
 
@@ -35,18 +34,26 @@ class AdkAgentService
             // Call ADK API
             $response = Http::timeout(30)
                 ->post("{$this->adkUrl}/run", [
-                    'user_id' => $user->id,
-                    'session_id' => $user->whatsapp_number,
+                    'app_name' => $this->apiAppName,
+                    'user_id' => (string) $user->id,
+                    'session_id' => (string) $user->whatsapp_number,
                     'state' => [
                         'user_id' => $user->id,
                     ],
-                    'message' => $conversation->message_content,
-                    'context' => $context,
-                    'stream' => false,
-                    'app_name' => $this->apiAppName,
+                    'new_message' => [
+                        'role' => 'user',
+                        'parts' => [
+                            ['text' => $conversation->message_content]
+                        ]
+                    ],
+                    'streaming' => false
                 ]);
 
             if (!$response->successful()) {
+                logger()->error('ADK API error', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
                 throw new \Exception('ADK API error: ' . $response->body());
             }
 
