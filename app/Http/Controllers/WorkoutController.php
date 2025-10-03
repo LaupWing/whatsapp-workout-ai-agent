@@ -46,7 +46,8 @@ class WorkoutController extends Controller
     {
         $user = User::find($request->user_id);
         $days = $request->input('days', 30);
-        logger($user->workkouts());
+        logger($user);
+        logger($user->workouts);
         $workouts = $user->workouts()
             ->where('workout_date', '>=', today()->subDays($days))
             ->with('workoutExercises.exercise')
