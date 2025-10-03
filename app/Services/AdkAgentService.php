@@ -92,7 +92,7 @@ class AdkAgentService
 
             $data = $response->json();
             $responseTime = (microtime(true) - $startTime) * 1000; // ms
-
+            logger('ADK response', $data);
             // Save AI interaction
             $aiInteraction = AiInteraction::create([
                 'user_id' => $user->id,
