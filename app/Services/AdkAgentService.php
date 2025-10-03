@@ -20,6 +20,26 @@ class AdkAgentService
         $this->apiAppName = config('services.adk.api_app_name');
     }
 
+    private function ensureSession(User $user, string $sessionId): void
+    {
+        // Try to get session
+        $response = Http::get(
+            "{$this->adkUrl}/apps/workout_coach_agent/users/{$user->id}/sessions/{$sessionId}"
+        );
+
+        // If session doesn't exist (404), create it
+        if ($response->status() === 404) {
+            Http::post(
+                "{$this->adkUrl}/apps/workout_coach_agent/users/{$user->id}/sessions/{$sessionId}",
+                [
+                    'state' => [
+                        'user_id' => $user->id,
+                    ]
+                ]
+            );
+        }
+    }
+
     /**
      * Send user message to ADK agent and process response
      */
@@ -28,15 +48,15 @@ class AdkAgentService
         $startTime = microtime(true);
 
         try {
-            // Get user context (recent workouts, goals, etc.)
             $context = $this->getUserContext($user);
-
+            $sessionId = $user->whatsapp_number;
+            $this->ensureSession($user, $sessionId);
             // Call ADK API
             $response = Http::timeout(30)
                 ->post("{$this->adkUrl}/run", [
                     'app_name' => $this->apiAppName,
                     'user_id' => (string) $user->id,
-                    'session_id' => (string) $user->whatsapp_number,
+                    'session_id' => (string) $sessionId,
                     'state' => [
                         'user_id' => $user->id,
                     ],
@@ -48,7 +68,21 @@ class AdkAgentService
                     ],
                     'streaming' => false
                 ]);
-
+            logger([
+                'app_name' => $this->apiAppName,
+                'user_id' => (string) $user->id,
+                'session_id' => (string) $user->whatsapp_number,
+                'state' => [
+                    'user_id' => $user->id,
+                ],
+                'new_message' => [
+                    'role' => 'user',
+                    'parts' => [
+                        ['text' => $conversation->message_content]
+                    ]
+                ],
+                'streaming' => false
+            ]);
             if (!$response->successful()) {
                 logger()->error('ADK API error', [
                     'status' => $response->status(),
