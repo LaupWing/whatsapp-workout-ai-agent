@@ -39,4 +39,9 @@ return [
         'api_key' => env('ADK_API_KEY'),
         'timeout' => env('ADK_TIMEOUT', 30),
     ],
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+        'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
+        'location' => env('GOOGLE_CLOUD_LOCATION', 'us-central1'),
+    ],
 ];
