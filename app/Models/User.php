@@ -82,4 +82,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(AIInteraction::class);
     }
+
+    public function workoutPlans()
+    {
+        return $this->hasMany(WorkoutPlan::class);
+    }
+
+    public function activeWorkoutPlan()
+    {
+        return $this->hasOne(WorkoutPlan::class)->where('status', 'active');
+    }
 }
