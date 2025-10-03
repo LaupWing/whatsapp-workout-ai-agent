@@ -34,5 +34,9 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
-
+    'adk' => [
+        'api_url' => env('ADK_API_URL', 'http://localhost:8001'),
+        'api_key' => env('ADK_API_KEY'),
+        'timeout' => env('ADK_TIMEOUT', 30),
+    ],
 ];
