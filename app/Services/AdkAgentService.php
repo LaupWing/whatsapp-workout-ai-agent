@@ -34,11 +34,16 @@ class AdkAgentService
 
             // Call ADK API
             $response = Http::timeout(30)
-                ->withHeaders(['Authorization' => "Bearer {$this->apiKey}"])
-                ->post("{$this->adkUrl}/agent/process", [
+                ->post("{$this->adkUrl}/run", [
                     'user_id' => $user->id,
+                    'session_id' => $user->whatsapp_number,
+                    'state' => [
+                        'user_id' => $user->id,
+                    ],
                     'message' => $conversation->message_content,
                     'context' => $context,
+                    'stream' => false,
+                    'app_name' => $this->apiAppName,
                 ]);
 
             if (!$response->successful()) {
