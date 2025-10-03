@@ -32,9 +32,8 @@ class AdkAgentService
             Http::post(
                 "{$this->adkUrl}/apps/workout_coach_agent/users/{$user->id}/sessions/{$sessionId}",
                 [
-                    'state' => [
-                        'user_id' => $user->id,
-                    ]
+                    'user_id' => $user->id,
+
                 ]
             );
         }
