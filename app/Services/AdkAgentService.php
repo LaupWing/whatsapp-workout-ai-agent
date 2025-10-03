@@ -90,24 +90,29 @@ class AdkAgentService
                 throw new \Exception('ADK API error: ' . $response->body());
             }
 
-            $data = $response->json();
-            $responseTime = (microtime(true) - $startTime) * 1000; // ms
-            logger('ADK response', $data);
-            // Save AI interaction
-            $aiInteraction = AiInteraction::create([
+            $events = $response->json(); // Array of events
+            $responseTime = (microtime(true) - $startTime) * 1000;
+
+            // ✅ EXTRACT THE FINAL TEXT RESPONSE
+            $finalResponse = $this->extractFinalResponse($events);
+            $agentName = $this->extractAgentName($events);
+            $toolCalls = $this->extractToolCalls($events);
+
+            AiInteraction::create([
                 'user_id' => $user->id,
                 'conversation_id' => $conversation->id,
-                'agent_name' => $data['agent_name'] ?? 'unknown',
+                'agent_name' => $agentName,
                 'user_input' => $conversation->message_content,
-                'agent_response' => $data['response'],
-                'parsed_intent' => $data['intent'] ?? null,
+                'agent_response' => $finalResponse,
+                'parsed_intent' => null, // Could extract from events if needed
                 'context_data' => $context,
-                'model_used' => $data['model'] ?? 'gemini-2.0-flash',
-                'tokens_used' => $data['tokens_used'] ?? null,
+                'model_used' => 'gemini-2.0-flash',
+                'tokens_used' => $this->extractTokenCount($events),
                 'response_time_ms' => $responseTime,
                 'was_successful' => true,
-                'tool_calls' => $data['tool_calls'] ?? null,
+                'tool_calls' => $toolCalls,
             ]);
+
 
             // Send response back to user via WhatsApp
             // app(WhatsAppService::class)->sendMessage(
@@ -120,7 +125,6 @@ class AdkAgentService
                 'error' => $e->getMessage(),
             ]);
 
-            // Log failed interaction
             AiInteraction::create([
                 'user_id' => $user->id,
                 'conversation_id' => $conversation->id,
