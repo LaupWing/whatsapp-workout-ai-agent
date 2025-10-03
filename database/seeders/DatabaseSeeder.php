@@ -18,6 +18,7 @@ class DatabaseSeeder extends Seeder
             ExerciseSeeder::class,
             UserSeeder::class,
             WorkoutSeeder::class,
+            WorkoutPlanSeeder::class,
         ]);
 
         $this->command->info('');
