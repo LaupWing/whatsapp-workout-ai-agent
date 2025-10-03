@@ -15,20 +15,18 @@ class AiInteraction extends Model
         'agent_name',
         'user_input',
         'agent_response',
-        'parsed_intent',
-        'context_data',
         'model_used',
         'tokens_used',
         'response_time_ms',
         'was_successful',
         'error_message',
         'tool_calls',
+        'raw_events',
     ];
 
     protected $casts = [
-        'parsed_intent' => 'array',
-        'context_data' => 'array',
         'tool_calls' => 'array',
+        'raw_events' => 'array',
         'was_successful' => 'boolean',
     ];
 
@@ -40,5 +38,25 @@ class AiInteraction extends Model
     public function conversation()
     {
         return $this->belongsTo(Conversation::class);
+    }
+
+    /**
+     * Get list of tools used in this interaction
+     */
+    public function getToolNamesAttribute(): array
+    {
+        if (!$this->tool_calls) {
+            return [];
+        }
+
+        return array_column($this->tool_calls, 'name');
+    }
+
+    /**
+     * Check if a specific tool was called
+     */
+    public function usedTool(string $toolName): bool
+    {
+        return in_array($toolName, $this->getToolNamesAttribute());
     }
 }
