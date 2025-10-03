@@ -12,11 +12,13 @@ class AdkAgentService
 {
     private string $adkUrl;
     private string $apiKey;
+    private string $apiAppName;
 
     public function __construct()
     {
         $this->adkUrl = config('services.adk.api_url');
         $this->apiKey = config('services.adk.api_key');
+        $this->apiAppName = config('services.adk.api_app_name');
     }
 
     /**

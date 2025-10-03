@@ -38,6 +38,7 @@ return [
         'api_url' => env('ADK_API_URL', 'http://localhost:8000'),
         'api_key' => env('ADK_API_KEY'),
         'timeout' => env('ADK_TIMEOUT', 30),
+        'api_app_name' => env('ADK_API_APP_NAME'),
     ],
     'gemini' => [
         'api_key' => env('GEMINI_API_KEY'),
