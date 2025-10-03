@@ -35,7 +35,7 @@ return [
         ],
     ],
     'adk' => [
-        'api_url' => env('ADK_API_URL', 'http://localhost:8001'),
+        'api_url' => env('ADK_API_URL', 'http://localhost:8000'),
         'api_key' => env('ADK_API_KEY'),
         'timeout' => env('ADK_TIMEOUT', 30),
     ],
