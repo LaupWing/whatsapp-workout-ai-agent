@@ -18,7 +18,7 @@ class TestAdkAgent extends Command
         $message = $this->argument('message') ?? 'What did I do yesterday?';
 
         $user = User::find($userId);
-
+        logger($user);
         if (!$user) {
             $this->error("❌ User {$userId} not found");
             return 1;
