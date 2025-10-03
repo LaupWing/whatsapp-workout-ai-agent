@@ -56,9 +56,6 @@ class AdkAgentService
                     'app_name' => $this->apiAppName,
                     'user_id' => (string) $user->id,
                     'session_id' => (string) $sessionId,
-                    'state' => [
-                        'user_id' => $user->id,
-                    ],
                     'new_message' => [
                         'role' => 'user',
                         'parts' => [
@@ -67,21 +64,7 @@ class AdkAgentService
                     ],
                     'streaming' => false
                 ]);
-            logger([
-                'app_name' => $this->apiAppName,
-                'user_id' => (string) $user->id,
-                'session_id' => (string) $user->whatsapp_number,
-                'state' => [
-                    'user_id' => $user->id,
-                ],
-                'new_message' => [
-                    'role' => 'user',
-                    'parts' => [
-                        ['text' => $conversation->message_content]
-                    ]
-                ],
-                'streaming' => false
-            ]);
+
             if (!$response->successful()) {
                 logger()->error('ADK API error', [
                     'status' => $response->status(),
