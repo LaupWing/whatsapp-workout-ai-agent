@@ -3,42 +3,21 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
-/**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
- */
 class UserFactory extends Factory
 {
-    /**
-     * The current password being used by the factory.
-     */
-    protected static ?string $password;
-
-    /**
-     * Define the model's default state.
-     *
-     * @return array<string, mixed>
-     */
     public function definition(): array
     {
         return [
-            'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
-            'email_verified_at' => now(),
-            'password' => static::$password ??= Hash::make('password'),
-            'remember_token' => Str::random(10),
+            'whatsapp_number' => $this->faker->unique()->numerify('316########'),
+            'name' => $this->faker->name(),
+            'gender' => $this->faker->randomElement(['male', 'female']),
+            'age' => $this->faker->numberBetween(18, 65),
+            'height_cm' => $this->faker->randomFloat(2, 150, 200),
+            'current_weight_kg' => $this->faker->randomFloat(2, 50, 120),
+            'fitness_goal' => $this->faker->randomElement(['lose_weight', 'build_muscle', 'maintain', 'strength']),
+            'experience_level' => $this->faker->randomElement(['beginner', 'intermediate', 'advanced']),
+            'is_active' => true,
         ];
-    }
-
-    /**
-     * Indicate that the model's email address should be unverified.
-     */
-    public function unverified(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'email_verified_at' => null,
-        ]);
     }
 }
