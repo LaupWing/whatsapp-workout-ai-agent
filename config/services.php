@@ -44,4 +44,10 @@ return [
         'project_id' => env('GOOGLE_CLOUD_PROJECT_ID'),
         'location' => env('GOOGLE_CLOUD_LOCATION', 'us-central1'),
     ],
+    'whatsapp' => [
+        'token' => env('WHATSAPP_TOKEN'),
+        'phone_number_id' => env('WHATSAPP_PHONE_NUMBER_ID'),
+        'verify_token' => env('WHATSAPP_VERIFY_TOKEN'), // Random string you choose
+        'api_version' => env('WHATSAPP_API_VERSION', 'v18.0'),
+    ],
 ];
