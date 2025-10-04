@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\WhatsAppWebhookController;
 use App\Http\Controllers\WorkoutController;
 use App\Http\Controllers\WorkoutPlanController;
 use Illuminate\Http\Request;
@@ -9,6 +10,9 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
+// WhatsApp webhook endpoints
+Route::get('/webhook/whatsapp', [WhatsAppWebhookController::class, 'verify']);
+Route::post('/webhook/whatsapp', [WhatsAppWebhookController::class, 'webhook']);
 
 Route::post('/workouts/log', [WorkoutController::class, 'log']);
 Route::get('/workouts/history', [WorkoutController::class, 'history']);
