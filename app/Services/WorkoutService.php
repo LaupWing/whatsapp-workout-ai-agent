@@ -53,7 +53,7 @@ class WorkoutService
         if (!$exercise) {
             // Create new exercise if not found
             $exercise = Exercise::create([
-                'name' => $exerciseData['name'],
+                'name' => $exerciseData['exercise_name'],
                 'category' => 'strength',
                 'muscle_group' => $exerciseData['muscle_group'] ?? 'unknown',
             ]);
