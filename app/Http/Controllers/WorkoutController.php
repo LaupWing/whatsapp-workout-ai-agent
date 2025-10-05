@@ -70,4 +70,27 @@ class WorkoutController extends Controller
 
         return response()->json($summary);
     }
+
+    /**
+     * Delete a workout
+     */
+    public function delete(Request $request, $id)
+    {
+        $user = User::find($request->user_id);
+        $workout = $user->workouts()->find($id);
+
+        if (!$workout) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Workout not found',
+            ], 404);
+        }
+
+        $workout->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Workout deleted successfully',
+        ]);
+    }
 }
