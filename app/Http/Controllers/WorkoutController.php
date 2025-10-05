@@ -28,7 +28,7 @@ class WorkoutController extends Controller
             'workout_data.exercises.*.reps' => 'nullable|integer',
             'workout_data.exercises.*.weight_kg' => 'nullable|numeric',
         ]);
-
+        logger()->info('Logging workout', $validated);
         $user = User::find($validated['user_id']);
         $workout = $this->workoutService->logWorkout($user, $validated['workout_data']);
 
