@@ -37,7 +37,7 @@ return [
     'adk' => [
         'api_url' => env('ADK_API_URL', 'http://localhost:8000'),
         'timeout' => env('ADK_TIMEOUT', 30),
-        'api_app_name' => env('ADK_API_APP_NAME'),
+        'api_app_name' => env('ADK_API_APP_NAME', 'workout_coach_agent'),
     ],
     'gemini' => [
         'api_key' => env('GEMINI_API_KEY'),
