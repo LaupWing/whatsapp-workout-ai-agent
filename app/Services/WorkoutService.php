@@ -46,8 +46,8 @@ class WorkoutService
     private function addExerciseToWorkout(Workout $workout, array $exerciseData): void
     {
         // Find exercise by name or aliases
-        $exercise = Exercise::where('name', $exerciseData['name'])
-            ->orWhereJsonContains('aliases', strtolower($exerciseData['name']))
+        $exercise = Exercise::where('name', $exerciseData['exercise_name'])
+            ->orWhereJsonContains('aliases', strtolower($exerciseData['exercise_name']))
             ->first();
 
         if (!$exercise) {
