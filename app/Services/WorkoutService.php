@@ -201,4 +201,19 @@ class WorkoutService
                 ->toArray(),
         ];
     }
+
+    /**
+     * Edit latest workout exercise entry
+     */
+    public function editLatestExercise(User $user, array $editData): ?WorkoutExercise
+    {
+        $latestEntry = WorkoutExercise::whereHas('workout', function ($q) use ($user) {
+            $q->where('user_id', $user->id);
+        })->latest()->first();
+        if (!$latestEntry) {
+            return null;
+        }
+        $latestEntry->update($editData);
+        return $latestEntry->fresh();
+    }
 }
