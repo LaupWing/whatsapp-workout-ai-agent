@@ -29,9 +29,7 @@ class WorkoutService
         );
 
         // Add exercise sets
-        foreach ($workoutData['exercises'] as $exerciseData) {
-            $this->addExerciseToWorkout($workout, $exerciseData);
-        }
+        $this->addExerciseToWorkout($workout, $workoutData);
 
         // Update workout totals
         $this->updateWorkoutTotals($workout);

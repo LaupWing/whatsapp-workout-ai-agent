@@ -20,13 +20,10 @@ class WorkoutController extends Controller
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'workout_data' => 'required|array',
-            'workout_data.date' => 'nullable|date',
-            'workout_data.type' => 'nullable|string',
-            'workout_data.exercises' => 'required|array',
-            'workout_data.exercises.*.name' => 'required|string',
-            'workout_data.exercises.*.sets' => 'nullable|integer',
-            'workout_data.exercises.*.reps' => 'nullable|integer',
-            'workout_data.exercises.*.weight_kg' => 'nullable|numeric',
+            'workout_data.exercise_name' => 'required|string',
+            'workout_data.sets' => 'required|integer',
+            'workout_data.reps' => 'required|integer',
+            'workout_data.weight_kg' => 'required|numeric',
         ]);
         logger()->info('Logging workout', $validated);
         $user = User::find($validated['user_id']);
