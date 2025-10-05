@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ExerciseController;
 use App\Http\Controllers\WhatsAppWebhookController;
 use App\Http\Controllers\WorkoutController;
 use App\Http\Controllers\WorkoutPlanController;
@@ -20,7 +21,17 @@ Route::group(['prefix' => 'workouts'], function () {
     Route::get('/history', [WorkoutController::class, 'history']);
     Route::get('/summary', [WorkoutController::class, 'summary']);
 });
-// Route::get('/exercises/search', [ExerciseController::class, 'search']);
+
+Route::group(['prefix' => 'exercises'], function () {
+    Route::get('/', [ExerciseController::class, 'index']);
+    Route::get('/search', [ExerciseController::class, 'search']);
+    Route::get('/{id}', [ExerciseController::class, 'show']);
+    Route::post('/', [ExerciseController::class, 'store']);
+    Route::put('/{id}', [ExerciseController::class, 'update']);
+    Route::delete('/{id}', [ExerciseController::class, 'destroy']);
+});
+
+
 
 
 Route::get('/workout-plans/active', [WorkoutPlanController::class, 'getActivePlan']);
