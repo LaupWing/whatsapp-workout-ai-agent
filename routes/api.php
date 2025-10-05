@@ -14,10 +14,12 @@ Route::get('/user', function (Request $request) {
 Route::get('/webhook/whatsapp', [WhatsAppWebhookController::class, 'verify']);
 Route::post('/webhook/whatsapp', [WhatsAppWebhookController::class, 'webhook']);
 
-Route::post('/workouts/log', [WorkoutController::class, 'log']);
-Route::patch('/workouts/{workout}/exercises/{exercise}/latest', [WorkoutController::class, 'editLatestExercise']);
-Route::get('/workouts/history', [WorkoutController::class, 'history']);
-Route::get('/workouts/summary', [WorkoutController::class, 'summary']);
+Route::group(['prefix' => 'workouts'], function () {
+    Route::post('/log', [WorkoutController::class, 'log']);
+    Route::patch('/{workout}/exercises/{exercise}/latest', [WorkoutController::class, 'editLatestExercise']);
+    Route::get('/history', [WorkoutController::class, 'history']);
+    Route::get('/summary', [WorkoutController::class, 'summary']);
+});
 // Route::get('/exercises/search', [ExerciseController::class, 'search']);
 
 
