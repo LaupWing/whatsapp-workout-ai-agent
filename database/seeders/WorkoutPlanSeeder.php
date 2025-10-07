@@ -107,6 +107,73 @@ class WorkoutPlanSeeder extends Seeder
             ],
         ]);
 
-        $this->command->info('✅ Created PPL workout plan for Sarah');
+        // Thursday - Push (same as Monday)
+        $plan->planExercises()->createMany([
+            [
+                'exercise_id' => $bench->id,
+                'day_of_week' => 'thursday',
+                'order' => 1,
+                'target_sets' => 4,
+                'target_reps' => '8-10',
+                'target_weight_kg' => 60,
+                'rest_seconds' => 120,
+            ],
+            [
+                'exercise_id' => $ohp->id,
+                'day_of_week' => 'thursday',
+                'order' => 2,
+                'target_sets' => 3,
+                'target_reps' => '8-10',
+                'target_weight_kg' => 35,
+                'rest_seconds' => 90,
+            ],
+        ]);
+
+        // Friday - Pull (same as Tuesday)
+        $plan->planExercises()->createMany([
+            [
+                'exercise_id' => $deadlift->id,
+                'day_of_week' => 'friday',
+                'order' => 1,
+                'target_sets' => 4,
+                'target_reps' => '5',
+                'target_weight_kg' => 100,
+                'rest_seconds' => 180,
+            ],
+            [
+                'exercise_id' => $pullups->id,
+                'day_of_week' => 'friday',
+                'order' => 2,
+                'target_sets' => 4,
+                'target_reps' => 'AMRAP',
+                'rest_seconds' => 120,
+            ],
+        ]);
+
+        // Saturday - Legs (same as Wednesday)
+        $plan->planExercises()->createMany([
+            [
+                'exercise_id' => $squat->id,
+                'day_of_week' => 'saturday',
+                'order' => 1,
+                'target_sets' => 4,
+                'target_reps' => '6-8',
+                'target_weight_kg' => 90,
+                'rest_seconds' => 180,
+            ],
+            [
+                'exercise_id' => $rdl->id,
+                'day_of_week' => 'saturday',
+                'order' => 2,
+                'target_sets' => 3,
+                'target_reps' => '10-12',
+                'target_weight_kg' => 70,
+                'rest_seconds' => 90,
+            ],
+        ]);
+
+        // Sunday - Rest (no exercises)
+
+        $this->command->info('✅ Created PPL workout plan for Sarah with all 7 days');
     }
 }
