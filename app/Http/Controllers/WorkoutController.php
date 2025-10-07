@@ -19,15 +19,15 @@ class WorkoutController extends Controller
     {
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
-            'workout_data' => 'required|array',
-            'workout_data.exercise_name' => 'required|string',
-            'workout_data.sets' => 'required|integer',
-            'workout_data.reps' => 'required|integer',
-            'workout_data.weight_kg' => 'required|numeric',
+            'exercises' => 'required|array|min:1',
+            'exercises.*.exercise_name' => 'required|string',
+            'exercises.*.sets' => 'required|integer',
+            'exercises.*.reps' => 'required|integer',
+            'exercises.*.weight_kg' => 'required|numeric',
         ]);
 
         $user = User::find($validated['user_id']);
-        $workout = $this->workoutService->logWorkout($user, $validated['workout_data']);
+        $workout = $this->workoutService->logWorkout($user, $validated['exercises']);
 
         return response()->json([
             'success' => true,
