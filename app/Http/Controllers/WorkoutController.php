@@ -17,7 +17,6 @@ class WorkoutController extends Controller
      */
     public function log(Request $request)
     {
-        logger()->info('Logging workout', $request->all());
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'exercises' => 'required|array|min:1',
@@ -34,7 +33,7 @@ class WorkoutController extends Controller
             $exercise['start_time'] = $request->input('start_time', now()->format('H:i:s'));
             $workout = $this->workoutService->logWorkout($user, $exercise);
         }
-
+        logger($workout->load('workoutExercises.exercise')->toArray());
         return response()->json([
             'success' => true,
             'workout' => $workout->load('workoutExercises.exercise'),
