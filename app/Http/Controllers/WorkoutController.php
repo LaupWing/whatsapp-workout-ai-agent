@@ -99,7 +99,7 @@ class WorkoutController extends Controller
     /**
      * Edit Latest Workout Exercise
      */
-    public function editExercise(Request $request)
+    public function editExercises(Request $request)
     {
         logger('Edit exercise request received', $request->all());
         return response()->json([
