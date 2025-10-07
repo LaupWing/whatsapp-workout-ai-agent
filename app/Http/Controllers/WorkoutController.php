@@ -28,7 +28,12 @@ class WorkoutController extends Controller
         ]);
 
         $user = User::find($validated['user_id']);
-        $workout = $this->workoutService->logWorkout($user, $validated['exercises']);
+        foreach ($validated['exercises'] as $exercise) {
+            $exercise['date'] = $request->input('date', today()->toDateString());
+            $exercise['type'] = $request->input('type', null);
+            $exercise['start_time'] = $request->input('start_time', now()->format('H:i:s'));
+            $workout = $this->workoutService->logWorkout($user, $exercise);
+        }
 
         return response()->json([
             'success' => true,
