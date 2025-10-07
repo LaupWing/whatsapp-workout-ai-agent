@@ -17,6 +17,7 @@ class WorkoutController extends Controller
      */
     public function log(Request $request)
     {
+        logger()->info('Logging workout', $request->all());
         $validated = $request->validate([
             'user_id' => 'required|exists:users,id',
             'exercises' => 'required|array|min:1',
