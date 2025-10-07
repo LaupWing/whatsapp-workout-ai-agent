@@ -98,10 +98,10 @@ class AdkAgentService
 
 
             // Send response back to user via WhatsApp
-            // app(WhatsAppService::class)->sendMessage(
-            //     $user->whatsapp_number,
-            //     $data['response']
-            // );
+            app(WhatsAppService::class)->sendMessage(
+                '31654754116',
+                'you stinky poopi head'
+            );
         } catch (\Exception $e) {
             Log::error('ADK processing error', [
                 'user_id' => $user->id,

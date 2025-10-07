@@ -41,7 +41,7 @@ class WhatsAppWebhookController extends Controller
         }
 
         $value = $data['entry'][0]['changes'][0]['value'];
-
+        logger()->info('Processing WhatsApp webhook value', $value);
         // Handle different webhook types
         if (isset($value['messages'])) {
             $this->handleIncomingMessage($value);
