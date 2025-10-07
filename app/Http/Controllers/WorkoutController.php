@@ -99,28 +99,33 @@ class WorkoutController extends Controller
     /**
      * Edit Latest Workout Exercise
      */
-    public function editLatestExercise(Request $request)
+    public function editExercise(Request $request)
     {
-        $validated = $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'exercise_name' => 'required|string',
-            'sets' => 'nullable|integer',
-            'reps' => 'nullable|integer',
-            'weight_kg' => 'nullable|numeric',
-        ]);
-        $user = User::find($validated['user_id']);
-        $updatedExercise = $this->workoutService->editLatestExercise(
-            $user,
-            $validated['exercise_name'],
-            $validated['sets'] ?? null,
-            $validated['reps'] ?? null,
-            $validated['weight_kg'] ?? null
-        );
-
+        logger('Edit exercise request received', $request->all());
         return response()->json([
             'success' => true,
-            'exercise' => $updatedExercise,
-            'message' => '✅ Latest exercise updated successfully!',
+            // 'message' => 'This endpoint is currently under maintenance. Please try again later.',
         ]);
+        // $validated = $request->validate([
+        //     'user_id' => 'required|exists:users,id',
+        //     'exercise_name' => 'required|string',
+        //     'sets' => 'nullable|integer',
+        //     'reps' => 'nullable|integer',
+        //     'weight_kg' => 'nullable|numeric',
+        // ]);
+        // $user = User::find($validated['user_id']);
+        // $updatedExercise = $this->workoutService->editLatestExercise(
+        //     $user,
+        //     $validated['exercise_name'],
+        //     $validated['sets'] ?? null,
+        //     $validated['reps'] ?? null,
+        //     $validated['weight_kg'] ?? null
+        // );
+
+        // return response()->json([
+        //     'success' => true,
+        //     'exercise' => $updatedExercise,
+        //     'message' => '✅ Latest exercise updated successfully!',
+        // ]);
     }
 }

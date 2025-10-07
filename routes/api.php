@@ -20,6 +20,7 @@ Route::group(['prefix' => 'workouts'], function () {
     Route::patch('/{workout}/exercises/{exercise}/latest', [WorkoutController::class, 'editLatestExercise']);
     Route::get('/history', [WorkoutController::class, 'history']);
     Route::get('/summary', [WorkoutController::class, 'summary']);
+    Route::patch('/exercises/edit', [WorkoutController::class, 'editExercises']);
 });
 
 Route::group(['prefix' => 'exercises'], function () {
