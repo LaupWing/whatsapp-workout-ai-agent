@@ -81,7 +81,7 @@ class AdkAgentService
             $agentName = $this->extractAgentName($events);
             $toolCalls = $this->extractToolCalls($events);
 
-            AiInteraction::create([
+            $aiInteraction = AiInteraction::create([
                 'user_id' => $user->id,
                 'conversation_id' => $conversation->id,
                 'agent_name' => $agentName,
@@ -100,7 +100,7 @@ class AdkAgentService
             // Send response back to user via WhatsApp
             app(WhatsAppService::class)->sendMessage(
                 '31654754116',
-                'you stinky poopi head'
+                $aiInteraction->agent_response
             );
         } catch (\Exception $e) {
             Log::error('ADK processing error', [
@@ -120,10 +120,10 @@ class AdkAgentService
             ]);
 
             // Send error message to user
-            // app(WhatsAppService::class)->sendMessage(
-            //     $user->whatsapp_number,
-            //     "Sorry, I'm having trouble processing that. Please try again in a moment."
-            // );
+            app(WhatsAppService::class)->sendMessage(
+                $user->whatsapp_number,
+                "Sorry, I'm having trouble processing that. Please try again in a moment."
+            );
         }
     }
 
