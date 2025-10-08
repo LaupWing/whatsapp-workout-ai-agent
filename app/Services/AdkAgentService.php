@@ -96,7 +96,6 @@ class AdkAgentService
                 'tool_calls' => $toolCalls,
             ]);
 
-
             // Send response back to user via WhatsApp
             app(WhatsAppService::class)->sendMessage(
                 '31654754116',
