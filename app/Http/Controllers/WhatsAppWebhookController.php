@@ -5,13 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Conversation;
 use App\Services\AdkAgentService;
+use App\Services\WhatsAppService;
+use App\Services\VoiceTranscriptionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class WhatsAppWebhookController extends Controller
 {
     public function __construct(
-        private AdkAgentService $adkService
+        private AdkAgentService $adkService,
+        private WhatsAppService $whatsappService,
+        private VoiceTranscriptionService $transcriptionService
     ) {}
 
     // Webhook verification (required by WhatsApp)
@@ -65,18 +69,68 @@ class WhatsAppWebhookController extends Controller
             ['is_active' => true]
         );
 
+        $messageContent = null;
+
+        // Handle voice messages
+        if ($messageType === 'audio') {
+            $mediaId = $message['audio']['id'] ?? null;
+
+            if ($mediaId) {
+                Log::info('Processing voice message', [
+                    'media_id' => $mediaId,
+                    'user_id' => $user->id,
+                ]);
+
+                // Download audio file
+                $audioPath = $this->whatsappService->downloadMedia($mediaId);
+
+                if ($audioPath) {
+                    // Transcribe audio to text
+                    $transcribedText = $this->transcriptionService->transcribe($audioPath);
+
+                    if ($transcribedText) {
+                        $messageContent = $transcribedText;
+                        Log::info('Voice message transcribed successfully', [
+                            'user_id' => $user->id,
+                            'text' => $transcribedText,
+                        ]);
+                    } else {
+                        Log::error('Voice transcription failed', [
+                            'media_id' => $mediaId,
+                            'user_id' => $user->id,
+                        ]);
+
+                        // Notify user of transcription failure
+                        $this->whatsappService->sendMessage(
+                            $from,
+                            "Sorry, I couldn't understand your voice message. Please try sending it as text or recording again."
+                        );
+                        return;
+                    }
+                } else {
+                    Log::error('Voice message download failed', [
+                        'media_id' => $mediaId,
+                        'user_id' => $user->id,
+                    ]);
+                    return;
+                }
+            }
+        } elseif ($messageType === 'text') {
+            $messageContent = $message['text']['body'] ?? null;
+        }
+
         // Save incoming message
         $conversation = Conversation::create([
             'user_id' => $user->id,
             'whatsapp_message_id' => $messageId,
             'direction' => 'incoming',
             'message_type' => $messageType,
-            'message_content' => $message[$messageType]['body'] ?? null,
+            'message_content' => $messageContent,
             'whatsapp_metadata' => $message,
         ]);
 
-        // Send to ADK agent for processing
-        if ($messageType === 'text') {
+        // Send to ADK agent for processing (both text and transcribed audio)
+        if ($messageContent && in_array($messageType, ['text', 'audio'])) {
             $this->adkService->processMessage($user, $conversation);
         }
     }

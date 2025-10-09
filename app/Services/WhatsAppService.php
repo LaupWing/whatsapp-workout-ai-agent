@@ -149,4 +149,58 @@ class WhatsAppService
             return null;
         }
     }
+
+    /**
+     * Download media file from WhatsApp
+     */
+    public function downloadMedia(string $mediaId): ?string
+    {
+        try {
+            // Step 1: Get media URL from media ID
+            $mediaInfoResponse = Http::withToken($this->token)
+                ->get("https://graph.facebook.com/{$this->apiVersion}/{$mediaId}");
+
+            if (!$mediaInfoResponse->successful()) {
+                Log::error('WhatsApp media info error', [
+                    'media_id' => $mediaId,
+                    'response' => $mediaInfoResponse->json(),
+                ]);
+                return null;
+            }
+
+            $mediaUrl = $mediaInfoResponse->json()['url'] ?? null;
+            if (!$mediaUrl) {
+                return null;
+            }
+
+            // Step 2: Download the actual media file
+            $mediaResponse = Http::withToken($this->token)
+                ->get($mediaUrl);
+
+            if (!$mediaResponse->successful()) {
+                Log::error('WhatsApp media download error', [
+                    'media_url' => $mediaUrl,
+                ]);
+                return null;
+            }
+
+            // Step 3: Save to temporary file
+            $tempPath = storage_path('app/temp/voice_' . $mediaId . '.ogg');
+
+            // Create temp directory if it doesn't exist
+            if (!file_exists(storage_path('app/temp'))) {
+                mkdir(storage_path('app/temp'), 0755, true);
+            }
+
+            file_put_contents($tempPath, $mediaResponse->body());
+
+            return $tempPath;
+        } catch (\Exception $e) {
+            Log::error('WhatsApp media download exception', [
+                'media_id' => $mediaId,
+                'error' => $e->getMessage(),
+            ]);
+            return null;
+        }
+    }
 }

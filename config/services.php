@@ -50,4 +50,8 @@ return [
         'verify_token' => env('WHATSAPP_VERIFY_TOKEN'), // Random string you choose
         'api_version' => env('WHATSAPP_API_VERSION', 'v18.0'),
     ],
+    'openai' => [
+        'api_key' => env('OPENAI_API_KEY'),
+        'whisper_model' => env('OPENAI_WHISPER_MODEL', 'whisper-1'),
+    ],
 ];
