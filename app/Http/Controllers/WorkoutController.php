@@ -97,35 +97,67 @@ class WorkoutController extends Controller
     }
 
     /**
-     * Edit Latest Workout Exercise
+     * Edit workout exercises
      */
     public function editExercises(Request $request)
     {
-        logger('Edit exercise request received', $request->all());
+        $validated = $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'exercises' => 'required|array|min:1',
+            'exercises.*.workout_exercise_id' => 'required|exists:workout_exercises,id',
+            'exercises.*.weight_kg' => 'nullable|numeric',
+            'exercises.*.reps' => 'nullable|integer',
+            'exercises.*.duration_seconds' => 'nullable|integer',
+            'exercises.*.distance_km' => 'nullable|numeric',
+            'exercises.*.rpe' => 'nullable|integer|min:1|max:10',
+            'exercises.*.notes' => 'nullable|string',
+        ]);
+
+        $user = User::find($validated['user_id']);
+        $updatedExercises = [];
+
+        foreach ($validated['exercises'] as $exerciseData) {
+            // Verify the workout exercise belongs to the user
+            $workoutExercise = \App\Models\WorkoutExercise::whereHas('workout', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })->find($exerciseData['workout_exercise_id']);
+
+            if (!$workoutExercise) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Workout exercise {$exerciseData['workout_exercise_id']} not found or doesn't belong to user",
+                ], 404);
+            }
+
+            // Prepare update data (only include fields that were provided)
+            $updateData = collect($exerciseData)
+                ->except('workout_exercise_id')
+                ->filter(fn($value) => !is_null($value))
+                ->toArray();
+
+            $workoutExercise->update($updateData);
+            $updatedExercises[] = $workoutExercise->fresh('exercise');
+        }
+
+        // Update workout totals if exercises were modified
+        if (!empty($updatedExercises)) {
+            $workout = $updatedExercises[0]->workout;
+
+            // Recalculate workout totals
+            $exercises = $workout->workoutExercises;
+            $totalVolume = $exercises->sum(fn($we) => ($we->reps ?? 0) * ($we->weight_kg ?? 0));
+            $totalSets = $exercises->count();
+
+            $workout->update([
+                'total_volume_kg' => $totalVolume,
+                'total_sets' => $totalSets,
+            ]);
+        }
+
         return response()->json([
             'success' => true,
-            // 'message' => 'This endpoint is currently under maintenance. Please try again later.',
+            'exercises' => $updatedExercises,
+            'message' => '✅ Exercises updated successfully!',
         ]);
-        // $validated = $request->validate([
-        //     'user_id' => 'required|exists:users,id',
-        //     'exercise_name' => 'required|string',
-        //     'sets' => 'nullable|integer',
-        //     'reps' => 'nullable|integer',
-        //     'weight_kg' => 'nullable|numeric',
-        // ]);
-        // $user = User::find($validated['user_id']);
-        // $updatedExercise = $this->workoutService->editLatestExercise(
-        //     $user,
-        //     $validated['exercise_name'],
-        //     $validated['sets'] ?? null,
-        //     $validated['reps'] ?? null,
-        //     $validated['weight_kg'] ?? null
-        // );
-
-        // return response()->json([
-        //     'success' => true,
-        //     'exercise' => $updatedExercise,
-        //     'message' => '✅ Latest exercise updated successfully!',
-        // ]);
     }
 }
