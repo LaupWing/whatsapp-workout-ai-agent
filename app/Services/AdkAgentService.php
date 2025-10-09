@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Log;
 class AdkAgentService
 {
     private string $adkUrl;
-    private string $apiKey;
     private string $apiAppName;
 
     public function __construct()

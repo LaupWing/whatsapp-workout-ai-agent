@@ -19,7 +19,7 @@ class User extends Authenticatable
      * @var list<string>
      */
     protected $fillable = [
-        // 'email',
+        'email',
         // 'password',
         'whatsapp_number',
         'name',
@@ -30,7 +30,13 @@ class User extends Authenticatable
         'target_weight_kg',
         'fitness_goal',
         'experience_level',
-        'preferences',
+        'training_location',
+        'has_dumbbells',
+        'workout_days',
+        'preferred_reminder_time',
+        'receive_motivation',
+        'whatsapp_consent',
+        'data_consent',
         'streak_days',
         'last_workout_date',
         'is_active',
@@ -57,7 +63,12 @@ class User extends Authenticatable
         return [
             // 'email_verified_at' => 'datetime',
             // 'password' => 'hashed',
-            'preferences' => 'array',
+            'workout_days' => 'array',
+            'has_dumbbells' => 'boolean',
+            'receive_motivation' => 'boolean',
+            'whatsapp_consent' => 'boolean',
+            'data_consent' => 'boolean',
+            'is_active' => 'boolean',
             'last_workout_date' => 'date',
             'onboarded_at' => 'datetime',
         ];
