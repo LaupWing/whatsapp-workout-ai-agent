@@ -33,7 +33,7 @@ class WorkoutController extends Controller
             $exercise['start_time'] = $request->input('start_time', now()->format('H:i:s'));
             $workout = $this->workoutService->logWorkout($user, $exercise);
         }
-        logger($workout->load('workoutExercises.exercise')->toArray());
+
         return response()->json([
             'success' => true,
             'workout' => $workout->load('workoutExercises.exercise'),
