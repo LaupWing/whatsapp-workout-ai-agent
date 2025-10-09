@@ -46,12 +46,21 @@ class WhatsAppWebhookController extends Controller
 
         $value = $data['entry'][0]['changes'][0]['value'];
         logger()->info('Processing WhatsApp webhook value', $value);
+
+
         // Handle different webhook types
         if (isset($value['messages'])) {
-            $this->handleIncomingMessage($value);
+            $userExists = User::where('whatsapp_number', $value['from'])->exists();
+
+            if (!$userExists) {
+                $this->whatsappService->sendMessage($value['from'], "Hi! It looks like you're new here. Please sign up on our website to get started with your fitness journey! Go to: https://yourwebsite.com/signup");
+            } else {
+                $this->handleIncomingMessage($value);
+            }
         } elseif (isset($value['statuses'])) {
             $this->handleMessageStatus($value);
         }
+
 
         return response()->json(['status' => 'ok']);
     }
