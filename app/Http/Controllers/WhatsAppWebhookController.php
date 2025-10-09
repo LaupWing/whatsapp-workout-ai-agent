@@ -94,6 +94,10 @@ class WhatsAppWebhookController extends Controller
                             'user_id' => $user->id,
                             'text' => $transcribedText,
                         ]);
+                        $this->whatsappService->sendMessage(
+                            $from,
+                            "Your transcription: \"$transcribedText\""
+                        );
                     } else {
                         Log::error('Voice transcription failed', [
                             'media_id' => $mediaId,
