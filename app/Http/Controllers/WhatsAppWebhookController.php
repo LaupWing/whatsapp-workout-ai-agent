@@ -63,6 +63,12 @@ class WhatsAppWebhookController extends Controller
         $messageId = $message['id'];
         $messageType = $message['type']; // text, image, audio, etc.
 
+        // Check if we've already processed this message (prevent duplicates)
+        if (Conversation::where('whatsapp_message_id', $messageId)->exists()) {
+            Log::info('Duplicate message detected, skipping', ['message_id' => $messageId]);
+            return;
+        }
+
         // Get or create user
         $user = User::firstOrCreate(
             ['whatsapp_number' => $from],

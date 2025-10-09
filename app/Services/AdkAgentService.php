@@ -98,7 +98,7 @@ class AdkAgentService
 
             // Send response back to user via WhatsApp
             app(WhatsAppService::class)->sendMessage(
-                '31654754116',
+                $user->whatsapp_number,
                 $aiInteraction->agent_response
             );
         } catch (\Exception $e) {
