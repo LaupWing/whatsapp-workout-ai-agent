@@ -33,9 +33,8 @@ return new class extends Migration
             $table->enum('fitness_goal', ['lose_weight', 'build_muscle', 'maintain', 'strength', 'endurance'])->nullable();
             $table->enum('experience_level', ['beginner', 'intermediate', 'advanced'])->default('beginner');
 
-            // Training Preferences
+            // Training Preferences (Note: Home training requires dumbbells)
             $table->enum('training_location', ['gym', 'home', 'both'])->nullable();
-            $table->boolean('has_dumbbells')->default(false); // For home training
             $table->json('workout_days')->nullable(); // Array of selected days: ["Monday", "Wednesday", "Friday"]
             $table->time('preferred_reminder_time')->nullable(); // Time for daily reminders
             $table->boolean('receive_motivation')->default(true); // Daily motivation messages

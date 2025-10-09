@@ -25,7 +25,6 @@ const DAYS = [
 
 export function OnboardingForm() {
     const [trainingLocation, setTrainingLocation] = useState<string>('');
-    const [hasDumbbells, setHasDumbbells] = useState(false);
     const [selectedDays, setSelectedDays] = useState<string[]>([]);
     const [receiveMotivation, setReceiveMotivation] = useState(true);
     const [consent1, setConsent1] = useState(false);
@@ -387,25 +386,29 @@ export function OnboardingForm() {
                             </Select>
 
                             {trainingLocation === 'home' && (
-                                <div className="flex items-start gap-3 rounded-md border border-border bg-card p-4">
-                                    <Checkbox
-                                        id="dumbbells"
-                                        checked={hasDumbbells}
-                                        onCheckedChange={(checked) =>
-                                            setHasDumbbells(checked as boolean)
-                                        }
-                                        required
-                                    />
-                                    <Label
-                                        htmlFor="dumbbells"
-                                        className="cursor-pointer text-sm leading-relaxed text-card-foreground"
+                                <div className="flex items-start gap-3 rounded-md border-2 border-amber-500/50 bg-amber-50 p-4 dark:border-amber-500/30 dark:bg-amber-950/20">
+                                    <svg
+                                        className="h-5 w-5 flex-shrink-0 text-amber-600 dark:text-amber-500"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
                                     >
-                                        I have at least one pair of dumbbells
-                                        for training.{' '}
-                                        <span className="text-muted-foreground">
-                                            *
-                                        </span>
-                                    </Label>
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                                        />
+                                    </svg>
+                                    <div className="flex-1">
+                                        <p className="text-sm font-medium text-amber-900 dark:text-amber-100">
+                                            Equipment Required
+                                        </p>
+                                        <p className="mt-1 text-sm text-amber-800 dark:text-amber-200">
+                                            At least one pair of dumbbells is
+                                            required for home training programs.
+                                        </p>
+                                    </div>
                                 </div>
                             )}
                         </div>

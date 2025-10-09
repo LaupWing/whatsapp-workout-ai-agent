@@ -12,7 +12,7 @@ class UserSeeder extends Seeder
      */
     public function run(): void
     {
-        // Test User 1: Beginner trying to lose weight (home gym)
+        // Test User 1: Beginner trying to lose weight (home gym with dumbbells)
         User::create([
             'whatsapp_number' => '31612345001',
             'name' => 'John Beginner',
@@ -25,7 +25,6 @@ class UserSeeder extends Seeder
             'fitness_goal' => 'lose_weight',
             'experience_level' => 'beginner',
             'training_location' => 'home',
-            'has_dumbbells' => true,
             'workout_days' => ['Monday', 'Wednesday', 'Friday'],
             'preferred_reminder_time' => '08:00:00',
             'receive_motivation' => true,
@@ -49,7 +48,6 @@ class UserSeeder extends Seeder
             'fitness_goal' => 'build_muscle',
             'experience_level' => 'intermediate',
             'training_location' => 'gym',
-            'has_dumbbells' => false,
             'workout_days' => ['Monday', 'Tuesday', 'Thursday', 'Saturday'],
             'preferred_reminder_time' => '18:00:00',
             'receive_motivation' => true,
@@ -61,7 +59,7 @@ class UserSeeder extends Seeder
             'onboarded_at' => now()->subWeeks(2),
         ]);
 
-        // Test User 3: Advanced strength training (both locations)
+        // Test User 3: Advanced strength training (both locations with dumbbells)
         User::create([
             'whatsapp_number' => '31612345003',
             'name' => 'Mike Strong',
@@ -74,7 +72,6 @@ class UserSeeder extends Seeder
             'fitness_goal' => 'strength',
             'experience_level' => 'advanced',
             'training_location' => 'both',
-            'has_dumbbells' => true,
             'workout_days' => ['Monday', 'Wednesday', 'Friday', 'Saturday'],
             'preferred_reminder_time' => '14:00:00',
             'receive_motivation' => true,
@@ -99,7 +96,6 @@ class UserSeeder extends Seeder
             'fitness_goal' => 'lose_weight',
             'experience_level' => 'beginner',
             'training_location' => 'gym',
-            'has_dumbbells' => false,
             'workout_days' => null,
             'preferred_reminder_time' => null,
             'receive_motivation' => false,
