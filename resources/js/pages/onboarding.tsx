@@ -542,7 +542,6 @@ export default function Onboarding() {
                                     onCheckedChange={(checked) =>
                                         setConsent1(checked as boolean)
                                     }
-                                    required
                                 />
                                 <Label
                                     htmlFor="consent1"
@@ -563,7 +562,6 @@ export default function Onboarding() {
                                     onCheckedChange={(checked) =>
                                         setConsent2(checked as boolean)
                                     }
-                                    required
                                 />
                                 <Label
                                     htmlFor="consent2"

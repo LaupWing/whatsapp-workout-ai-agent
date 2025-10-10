@@ -15,6 +15,7 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        logger('incoming message');
         $validated = $request->validate([
             'whatsapp_number' => 'required|string|unique:users,whatsapp_number',
             'email' => 'required|email|unique:users,email',
@@ -63,6 +64,6 @@ class UserController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect('/workout-plan-chat');
+        return to_route('workout-plan-chat');
     }
 }
