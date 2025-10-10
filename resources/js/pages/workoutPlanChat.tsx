@@ -329,7 +329,7 @@ function WorkoutPlanChat() {
                                 key={index}
                                 className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
                             >
-                                <div className="relative flex items-start gap-2">
+                                <div className="relative">
                                     <div
                                         className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                                             message.type === "user"
@@ -342,10 +342,10 @@ function WorkoutPlanChat() {
                                     {message.editable && message.step && (
                                         <button
                                             onClick={() => handleEditStep(message.step!)}
-                                            className="flex-shrink-0 rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                                            className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-background border border-border shadow-sm text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:scale-110"
                                             title="Edit"
                                         >
-                                            <Edit2 className="h-4 w-4" />
+                                            <Edit2 className="h-3.5 w-3.5" />
                                         </button>
                                     )}
                                 </div>
