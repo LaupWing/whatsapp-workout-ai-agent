@@ -3,22 +3,13 @@ import React from "react"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
+import {
+    MuscleGroup,
+    MuscleGroupOptions,
+    WorkoutPlanGoal,
+    WorkoutPlanGoalOptions,
+} from "@/types/enums"
 import { useState } from "react"
-
-type WorkoutGoal =
-    | "Strength"
-    | "Hypertrophy"
-    | "Endurance"
-    | "Weight Loss"
-    | "General Fitness"
-type MuscleGroup =
-    | "Chest"
-    | "Back"
-    | "Legs"
-    | "Arms"
-    | "Shoulders"
-    | "Core"
-    | "Full Body"
 
 type Message = {
     type: "ai" | "user"
@@ -36,40 +27,32 @@ function WorkoutPlanChat() {
         },
     ])
 
-    const [selectedGoal, setSelectedGoal] = useState<WorkoutGoal | null>(null)
-    const [selectedMuscles, setSelectedMuscles] = useState<MuscleGroup[]>([])
+    const [selectedGoal, setSelectedGoal] = useState<WorkoutPlanGoal | null>(
+        null,
+    )
+    // Default to all muscle groups checked
+    const [selectedMuscles, setSelectedMuscles] = useState<MuscleGroup[]>(
+        MuscleGroupOptions.map((m) => m.value),
+    )
     const [primaryFocus, setPrimaryFocus] = useState<
         MuscleGroup | "No Preference" | null
     >(null)
     const [duration, setDuration] = useState<number>(60)
 
-    const workoutGoals: WorkoutGoal[] = [
-        "Strength",
-        "Hypertrophy",
-        "Endurance",
-        "Weight Loss",
-        "General Fitness",
-    ]
-    const muscleGroups: MuscleGroup[] = [
-        "Chest",
-        "Back",
-        "Legs",
-        "Arms",
-        "Shoulders",
-        "Core",
-        "Full Body",
-    ]
     const durations = [30, 45, 60, 75, 90]
 
-    const handleGoalSelect = (goal: WorkoutGoal) => {
+    const handleGoalSelect = (goal: WorkoutPlanGoal) => {
         setSelectedGoal(goal)
+        const goalOption = WorkoutPlanGoalOptions.find(
+            (opt) => opt.value === goal,
+        )
         setMessages((prev) => [
             ...prev,
-            { type: "user", content: goal },
+            { type: "user", content: goalOption?.label || goal },
             {
                 type: "ai",
                 content:
-                    "Great choice! Which muscle groups do you want to focus on? Select all that apply.",
+                    "Great choice! Which muscle groups do you want to train? All groups are selected by default - uncheck any you want to skip.",
             },
         ])
         setCurrentStep("muscles")
@@ -78,9 +61,12 @@ function WorkoutPlanChat() {
     const handleMusclesContinue = () => {
         if (selectedMuscles.length === 0) return
 
+        const muscleLabels = selectedMuscles.map(
+            (m) => MuscleGroupOptions.find((opt) => opt.value === m)?.label || m,
+        )
         setMessages((prev) => [
             ...prev,
-            { type: "user", content: selectedMuscles.join(", ") },
+            { type: "user", content: muscleLabels.join(", ") },
             {
                 type: "ai",
                 content:
@@ -92,9 +78,14 @@ function WorkoutPlanChat() {
 
     const handleFocusSelect = (focus: MuscleGroup | "No Preference") => {
         setPrimaryFocus(focus)
+        const focusLabel =
+            focus === "No Preference"
+                ? "No Preference"
+                : MuscleGroupOptions.find((opt) => opt.value === focus)?.label ||
+                  focus
         setMessages((prev) => [
             ...prev,
-            { type: "user", content: focus },
+            { type: "user", content: focusLabel },
             {
                 type: "ai",
                 content: "How long do you want each workout session to be?",
@@ -105,6 +96,18 @@ function WorkoutPlanChat() {
 
     const handleDurationSelect = (mins: number) => {
         setDuration(mins)
+        const goalLabel =
+            WorkoutPlanGoalOptions.find((opt) => opt.value === selectedGoal)
+                ?.label || selectedGoal
+        const muscleLabels = selectedMuscles.map(
+            (m) => MuscleGroupOptions.find((opt) => opt.value === m)?.label || m,
+        )
+        const focusLabel =
+            primaryFocus === "No Preference"
+                ? "No Preference"
+                : MuscleGroupOptions.find((opt) => opt.value === primaryFocus)
+                      ?.label || primaryFocus
+
         setMessages((prev) => [
             ...prev,
             { type: "user", content: `${mins} minutes` },
@@ -121,7 +124,7 @@ function WorkoutPlanChat() {
                                     🎯 Goal:
                                 </span>
                                 <span className="text-foreground">
-                                    {selectedGoal}
+                                    {goalLabel}
                                 </span>
                             </div>
                             <div className="flex items-start gap-2">
@@ -129,7 +132,7 @@ function WorkoutPlanChat() {
                                     💪 Target Muscles:
                                 </span>
                                 <span className="text-foreground">
-                                    {selectedMuscles.join(", ")}
+                                    {muscleLabels.join(", ")}
                                 </span>
                             </div>
                             <div className="flex items-start gap-2">
@@ -137,7 +140,7 @@ function WorkoutPlanChat() {
                                     ⭐ Focus Area:
                                 </span>
                                 <span className="text-foreground">
-                                    {primaryFocus}
+                                    {focusLabel}
                                 </span>
                             </div>
                             <div className="flex items-start gap-2">
@@ -190,16 +193,14 @@ function WorkoutPlanChat() {
                 <div className="border-t border-border pt-6">
                     {currentStep === "goal" && (
                         <div className="flex flex-wrap gap-2">
-                            {workoutGoals.map((goal) => (
+                            {WorkoutPlanGoalOptions.map((option) => (
                                 <Button
-                                    key={goal}
-                                    onClick={() => handleGoalSelect(goal)}
+                                    key={option.value}
+                                    onClick={() => handleGoalSelect(option.value)}
                                     variant="outline"
                                     className="border-border bg-card text-card-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                                 >
-                                    {goal === "Hypertrophy"
-                                        ? "Hypertrophy (Muscle Growth)"
-                                        : goal}
+                                    {option.label}
                                 </Button>
                             ))}
                         </div>
@@ -208,30 +209,30 @@ function WorkoutPlanChat() {
                     {currentStep === "muscles" && (
                         <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                                {muscleGroups.map((muscle) => (
+                                {MuscleGroupOptions.map((option) => (
                                     <div
-                                        key={muscle}
-                                        onClick={() => toggleMuscle(muscle)}
+                                        key={option.value}
+                                        onClick={() => toggleMuscle(option.value)}
                                         className={`flex cursor-pointer items-center gap-2 rounded-lg border p-3 transition-colors ${
-                                            selectedMuscles.includes(muscle)
+                                            selectedMuscles.includes(option.value)
                                                 ? "border-primary bg-primary/10"
                                                 : "border-border bg-card hover:border-primary/50"
                                         }`}
                                     >
                                         <Checkbox
-                                            id={muscle}
+                                            id={option.value}
                                             checked={selectedMuscles.includes(
-                                                muscle,
+                                                option.value,
                                             )}
                                             onCheckedChange={() =>
-                                                toggleMuscle(muscle)
+                                                toggleMuscle(option.value)
                                             }
                                         />
                                         <Label
-                                            htmlFor={muscle}
+                                            htmlFor={option.value}
                                             className="cursor-pointer text-sm text-foreground"
                                         >
-                                            {muscle}
+                                            {option.label}
                                         </Label>
                                     </div>
                                 ))}
@@ -248,16 +249,21 @@ function WorkoutPlanChat() {
 
                     {currentStep === "focus" && (
                         <div className="flex flex-wrap gap-2">
-                            {selectedMuscles.map((muscle) => (
-                                <Button
-                                    key={muscle}
-                                    onClick={() => handleFocusSelect(muscle)}
-                                    variant="outline"
-                                    className="border-border bg-card text-card-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                                >
-                                    {muscle}
-                                </Button>
-                            ))}
+                            {selectedMuscles.map((muscle) => {
+                                const option = MuscleGroupOptions.find(
+                                    (opt) => opt.value === muscle,
+                                )
+                                return (
+                                    <Button
+                                        key={muscle}
+                                        onClick={() => handleFocusSelect(muscle)}
+                                        variant="outline"
+                                        className="border-border bg-card text-card-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                                    >
+                                        {option?.label || muscle}
+                                    </Button>
+                                )
+                            })}
                             <Button
                                 onClick={() =>
                                     handleFocusSelect("No Preference")
