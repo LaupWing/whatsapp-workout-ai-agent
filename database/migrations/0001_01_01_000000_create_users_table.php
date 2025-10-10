@@ -15,9 +15,6 @@ return new class extends Migration
             $table->id();
             $table->string('name')->nullable(); // Full name
             $table->string('email')->unique();
-            // $table->timestamp('email_verified_at')->nullable();
-            // $table->string('password');
-            // $table->rememberToken();
             $table->string('whatsapp_number')->unique(); // User's WhatsApp number
 
             // Basic Information
