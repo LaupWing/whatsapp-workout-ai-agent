@@ -12,8 +12,6 @@ Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-// User registration
-Route::post('/users', [UserController::class, 'store']);
 
 // WhatsApp webhook endpoints
 Route::get('/webhook/whatsapp', [WhatsAppWebhookController::class, 'verify']);
