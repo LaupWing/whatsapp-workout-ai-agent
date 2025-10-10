@@ -74,7 +74,7 @@ export default function Onboarding() {
         setIsSubmitting(true)
 
         router.post(
-            "/api/users",
+            "/onboarding",
             {
                 whatsapp_number: whatsappNumber,
                 email,
@@ -104,6 +104,10 @@ export default function Onboarding() {
                     alert(
                         "Failed to create account. Please check your information and try again.",
                     )
+                    setIsSubmitting(false)
+                },
+                onFinish: () => {
+                    // Always reset submitting state when request finishes
                     setIsSubmitting(false)
                 },
             },

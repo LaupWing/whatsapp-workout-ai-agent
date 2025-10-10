@@ -15,7 +15,7 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $validated = $request->validate([
             'whatsapp_number' => 'required|string|unique:users,whatsapp_number',
             'email' => 'required|email|unique:users,email',
             'name' => 'nullable|string|max:255',
@@ -28,15 +28,11 @@ class UserController extends Controller
             'experience_level' => 'required|string',
             'training_location' => 'nullable|string',
             'workout_days' => 'nullable|array',
-            'reminder_time' => 'nullable|date_format:H:i',
+            'reminder_time' => 'nullable|string',
             'receive_motivation_messages' => 'boolean',
             'consent_whatsapp' => 'required|boolean|accepted',
             'consent_data_usage' => 'required|boolean|accepted',
         ]);
-
-        if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
-        }
 
         // Create user
         $user = User::create([
@@ -67,6 +63,6 @@ class UserController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return Inertia::location(route('workout-plan-chat'));
+        return redirect()->route('workout-plan-chat');
     }
 }

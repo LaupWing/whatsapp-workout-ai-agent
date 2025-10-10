@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -10,6 +11,8 @@ Route::get('/', function () {
 Route::get('/onboarding', function () {
     return Inertia::render('onboarding');
 })->name('onboarding');
+
+Route::post('/onboarding', [UserController::class, 'store'])->name('onboarding.store');
 
 Route::get('/workout-plan-chat', function () {
     return Inertia::render('workoutPlanChat');
