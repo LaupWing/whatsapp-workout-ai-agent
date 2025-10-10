@@ -7,6 +7,7 @@ import {
     WorkoutPlanGoal,
     WorkoutPlanGoalOptions,
 } from "@/types/enums"
+import { router } from "@inertiajs/react"
 import { Edit2 } from "lucide-react"
 import { useState } from "react"
 
@@ -44,6 +45,7 @@ function WorkoutPlanChat() {
         MuscleGroup | "No Preference" | null
     >(null)
     const [duration, setDuration] = useState<number>(60)
+    const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
 
     const durations = [30, 45, 60, 75, 90]
 
@@ -54,7 +56,12 @@ function WorkoutPlanChat() {
         )
         setMessages((prev) => [
             ...prev.filter((m) => m.step !== "goal"),
-            { type: "user", content: goalOption?.label || goal, step: "goal", editable: true },
+            {
+                type: "user",
+                content: goalOption?.label || goal,
+                step: "goal",
+                editable: true,
+            },
             {
                 type: "ai",
                 content:
@@ -70,10 +77,21 @@ function WorkoutPlanChat() {
     }
 
     const handleEditStep = (step: Step) => {
+        // Confirm before allowing edit
+        if (
+            !confirm(
+                "Are you sure you want to edit this answer? This will reset all subsequent answers.",
+            )
+        ) {
+            return
+        }
+
         setCurrentStep(step)
         // Remove all messages after this step
         setMessages((prev) => {
-            const stepIndex = prev.findIndex((m) => m.step === step && m.type === "user")
+            const stepIndex = prev.findIndex(
+                (m) => m.step === step && m.type === "user",
+            )
             if (stepIndex === -1) return prev
             return prev.slice(0, stepIndex)
         })
@@ -93,11 +111,17 @@ function WorkoutPlanChat() {
         if (selectedMuscles.length === 0) return
 
         const muscleLabels = selectedMuscles.map(
-            (m) => MuscleGroupOptions.find((opt) => opt.value === m)?.label || m,
+            (m) =>
+                MuscleGroupOptions.find((opt) => opt.value === m)?.label || m,
         )
         setMessages((prev) => [
             ...prev.filter((m) => m.step !== "muscles"),
-            { type: "user", content: muscleLabels.join(", "), step: "muscles", editable: true },
+            {
+                type: "user",
+                content: muscleLabels.join(", "),
+                step: "muscles",
+                editable: true,
+            },
             {
                 type: "ai",
                 content:
@@ -117,11 +141,16 @@ function WorkoutPlanChat() {
         const focusLabel =
             focus === "No Preference"
                 ? "No Preference"
-                : MuscleGroupOptions.find((opt) => opt.value === focus)?.label ||
-                  focus
+                : MuscleGroupOptions.find((opt) => opt.value === focus)
+                      ?.label || focus
         setMessages((prev) => [
             ...prev.filter((m) => m.step !== "focus"),
-            { type: "user", content: focusLabel, step: "focus", editable: true },
+            {
+                type: "user",
+                content: focusLabel,
+                step: "focus",
+                editable: true,
+            },
             {
                 type: "ai",
                 content: "How long do you want each workout session to be?",
@@ -141,7 +170,8 @@ function WorkoutPlanChat() {
             WorkoutPlanGoalOptions.find((opt) => opt.value === selectedGoal)
                 ?.label || selectedGoal
         const muscleLabels = selectedMuscles.map(
-            (m) => MuscleGroupOptions.find((opt) => opt.value === m)?.label || m,
+            (m) =>
+                MuscleGroupOptions.find((opt) => opt.value === m)?.label || m,
         )
         const focusLabel =
             primaryFocus === "No Preference"
@@ -151,7 +181,12 @@ function WorkoutPlanChat() {
 
         setMessages((prev) => [
             ...prev.filter((m) => m.step !== "duration"),
-            { type: "user", content: `${mins} minutes`, step: "duration", editable: true },
+            {
+                type: "user",
+                content: `${mins} minutes`,
+                step: "duration",
+                editable: true,
+            },
             {
                 type: "ai",
                 content: (
@@ -212,11 +247,38 @@ function WorkoutPlanChat() {
                 : [...prev, muscle],
         )
     }
+
+    const handleSubmitWorkoutPlan = () => {
+        setIsSubmitting(true)
+
+        router.post(
+            "/api/workout-plans",
+            {
+                goal: selectedGoal,
+                muscle_groups: selectedMuscles,
+                primary_focus:
+                    primaryFocus === "No Preference" ? null : primaryFocus,
+                session_duration: duration,
+            },
+            {
+                onSuccess: () => {
+                    // Redirect will be handled by backend
+                },
+                onError: (errors) => {
+                    console.error("Error submitting workout plan:", errors)
+                    alert(
+                        "Failed to create workout plan. Please try again.",
+                    )
+                    setIsSubmitting(false)
+                },
+            },
+        )
+    }
     const renderChoices = (step: Step) => {
         switch (step) {
             case "goal":
                 return (
-                    <div className="flex flex-wrap gap-2 justify-end">
+                    <div className="flex flex-wrap justify-end gap-2">
                         {WorkoutPlanGoalOptions.map((option) => (
                             <button
                                 key={option.value}
@@ -231,7 +293,7 @@ function WorkoutPlanChat() {
             case "muscles":
                 return (
                     <div className="space-y-3">
-                        <div className="flex flex-wrap gap-2 justify-end">
+                        <div className="flex flex-wrap justify-end gap-2">
                             {MuscleGroupOptions.map((option) => (
                                 <button
                                     key={option.value}
@@ -242,7 +304,9 @@ function WorkoutPlanChat() {
                                             : "border-border bg-card text-card-foreground hover:bg-accent"
                                     }`}
                                 >
-                                    {option.label} {selectedMuscles.includes(option.value) && "✓"}
+                                    {option.label}{" "}
+                                    {selectedMuscles.includes(option.value) &&
+                                        "✓"}
                                 </button>
                             ))}
                         </div>
@@ -260,7 +324,7 @@ function WorkoutPlanChat() {
                 )
             case "focus":
                 return (
-                    <div className="flex flex-wrap gap-2 justify-end">
+                    <div className="flex flex-wrap justify-end gap-2">
                         {selectedMuscles.map((muscle) => {
                             const option = MuscleGroupOptions.find(
                                 (opt) => opt.value === muscle,
@@ -285,7 +349,7 @@ function WorkoutPlanChat() {
                 )
             case "duration":
                 return (
-                    <div className="flex flex-wrap gap-2 justify-end">
+                    <div className="flex flex-wrap justify-end gap-2">
                         {durations.map((mins) => (
                             <button
                                 key={mins}
@@ -300,8 +364,14 @@ function WorkoutPlanChat() {
             case "summary":
                 return (
                     <div className="flex justify-end">
-                        <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                            Generate My Workout Plan
+                        <Button
+                            onClick={handleSubmitWorkoutPlan}
+                            disabled={isSubmitting}
+                            className="bg-primary text-primary-foreground hover:bg-primary/90"
+                        >
+                            {isSubmitting
+                                ? "Creating..."
+                                : "Generate My Workout Plan"}
                         </Button>
                     </div>
                 )
@@ -327,33 +397,32 @@ function WorkoutPlanChat() {
                         return (
                             <div
                                 key={index}
-                                className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
+                                className={`relative flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
                             >
-                                <div className="relative">
-                                    <div
-                                        className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                                            message.type === "user"
-                                                ? "bg-green-500 text-white dark:bg-green-600"
-                                                : "border border-border bg-muted text-foreground"
-                                        }`}
-                                    >
-                                        {message.content}
-                                    </div>
-                                    {message.editable && message.step && (
-                                        <button
-                                            onClick={() => handleEditStep(message.step!)}
-                                            className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-background border border-border shadow-sm text-muted-foreground transition-all hover:bg-accent hover:text-foreground hover:scale-110"
-                                            title="Edit"
-                                        >
-                                            <Edit2 className="h-3.5 w-3.5" />
-                                        </button>
-                                    )}
+                                <div
+                                    className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                                        message.type === "user"
+                                            ? "bg-green-500 text-white dark:bg-green-600"
+                                            : "border border-border bg-muted text-foreground"
+                                    }`}
+                                >
+                                    {message.content}
                                 </div>
+                                {message.editable && message.step && (
+                                    <button
+                                        onClick={() =>
+                                            handleEditStep(message.step!)
+                                        }
+                                        className="absolute -top-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full border border-border bg-background text-muted-foreground shadow-sm transition-all hover:scale-110 hover:bg-accent hover:text-foreground"
+                                        title="Edit"
+                                    >
+                                        <Edit2 className="h-3.5 w-3.5" />
+                                    </button>
+                                )}
                             </div>
                         )
                     })}
                 </div>
-
             </div>
         </main>
     )

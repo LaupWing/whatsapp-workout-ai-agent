@@ -15,35 +15,99 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import {
     ExperienceLevel,
     ExperienceLevelOptions,
+    FitnessGoal,
     FitnessGoalOptions,
+    Gender,
     GenderOptions,
     TrainingLocation,
     TrainingLocationOptions,
     WorkoutDay,
     WorkoutDayOptions,
 } from "@/types/enums"
+import { router } from "@inertiajs/react"
 import { useState } from "react"
 
 export default function Onboarding() {
-    const [trainingLocation, setTrainingLocation] = useState<TrainingLocation | "">("")
+    // Basic Information
+    const [whatsappNumber] = useState<string>("+1 234 567 8900")
+    const [email, setEmail] = useState<string>("")
+    const [fullName, setFullName] = useState<string>("")
+    const [gender, setGender] = useState<Gender | "">("")
+    const [age, setAge] = useState<string>("")
+
+    // Body Stats
+    const [height, setHeight] = useState<string>("")
+    const [currentWeight, setCurrentWeight] = useState<string>("")
+    const [targetWeight, setTargetWeight] = useState<string>("")
+
+    // Fitness Profile
+    const [fitnessGoal, setFitnessGoal] = useState<FitnessGoal | "">("")
+    const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel>(
+        ExperienceLevel.BEGINNER,
+    )
+
+    // Preferences
+    const [trainingLocation, setTrainingLocation] = useState<
+        TrainingLocation | ""
+    >("")
     const [selectedDays, setSelectedDays] = useState<WorkoutDay[]>([])
+    const [reminderTime, setReminderTime] = useState<string>("")
     const [receiveMotivation, setReceiveMotivation] = useState(true)
+
+    // Consent
     const [consent1, setConsent1] = useState(false)
     const [consent2, setConsent2] = useState(false)
-    const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel>(ExperienceLevel.BEGINNER)
-    const [email, setEmail] = useState<string>("")
-    const [whatsappNumber] = useState<string>("+1 234 567 8900")
+
+    // Loading state
+    const [isSubmitting, setIsSubmitting] = useState(false)
 
     const toggleDay = (day: WorkoutDay) => {
         setSelectedDays((prev) =>
-            prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
+            prev.includes(day)
+                ? prev.filter((d) => d !== day)
+                : [...prev, day],
         )
     }
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-        // Handle form submission
-        console.log("Form submitted")
+        setIsSubmitting(true)
+
+        router.post(
+            "/api/users",
+            {
+                whatsapp_number: whatsappNumber,
+                email,
+                name: fullName,
+                gender: gender || null,
+                age: age ? parseInt(age) : null,
+                height: height ? parseFloat(height) : null,
+                current_weight: currentWeight
+                    ? parseFloat(currentWeight)
+                    : null,
+                target_weight: targetWeight ? parseFloat(targetWeight) : null,
+                fitness_goal: fitnessGoal || null,
+                experience_level: experienceLevel,
+                training_location: trainingLocation || null,
+                workout_days: selectedDays,
+                reminder_time: reminderTime || null,
+                receive_motivation_messages: receiveMotivation,
+                consent_whatsapp: consent1,
+                consent_data_usage: consent2,
+            },
+            {
+                onSuccess: () => {
+                    // Redirect to workout plan chat will be handled by backend
+                },
+                onError: (errors) => {
+                    console.error("Error creating user:", errors)
+                    alert(
+                        "Failed to create account. Please check your information and try again.",
+                    )
+                    setIsSubmitting(false)
+                },
+            },
+        )
     }
     return (
         <main className="min-h-screen bg-background">
@@ -111,6 +175,8 @@ export default function Onboarding() {
                                     id="email"
                                     type="email"
                                     placeholder="john@example.com"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                     required
                                     className="border-border bg-card text-card-foreground"
                                 />
@@ -128,6 +194,10 @@ export default function Onboarding() {
                                         id="fullName"
                                         type="text"
                                         placeholder="John Doe"
+                                        value={fullName}
+                                        onChange={(e) =>
+                                            setFullName(e.target.value)
+                                        }
                                         className="border-border bg-card text-card-foreground"
                                     />
                                 </div>
@@ -139,7 +209,12 @@ export default function Onboarding() {
                                     >
                                         Gender
                                     </Label>
-                                    <Select>
+                                    <Select
+                                        value={gender}
+                                        onValueChange={(value) =>
+                                            setGender(value as Gender)
+                                        }
+                                    >
                                         <SelectTrigger
                                             id="gender"
                                             className="border-border bg-card text-card-foreground"
@@ -171,6 +246,8 @@ export default function Onboarding() {
                                     id="age"
                                     type="number"
                                     placeholder="25"
+                                    value={age}
+                                    onChange={(e) => setAge(e.target.value)}
                                     min="1"
                                     max="120"
                                     className="border-border bg-card text-card-foreground"
@@ -202,6 +279,8 @@ export default function Onboarding() {
                                     id="height"
                                     type="number"
                                     placeholder="175"
+                                    value={height}
+                                    onChange={(e) => setHeight(e.target.value)}
                                     min="1"
                                     className="border-border bg-card text-card-foreground"
                                 />
@@ -218,6 +297,10 @@ export default function Onboarding() {
                                     id="currentWeight"
                                     type="number"
                                     placeholder="70"
+                                    value={currentWeight}
+                                    onChange={(e) =>
+                                        setCurrentWeight(e.target.value)
+                                    }
                                     min="1"
                                     step="0.1"
                                     className="border-border bg-card text-card-foreground"
@@ -235,6 +318,10 @@ export default function Onboarding() {
                                     id="targetWeight"
                                     type="number"
                                     placeholder="65"
+                                    value={targetWeight}
+                                    onChange={(e) =>
+                                        setTargetWeight(e.target.value)
+                                    }
                                     min="1"
                                     step="0.1"
                                     className="border-border bg-card text-card-foreground"
@@ -262,7 +349,12 @@ export default function Onboarding() {
                                 >
                                     Fitness Goal
                                 </Label>
-                                <Select>
+                                <Select
+                                    value={fitnessGoal}
+                                    onValueChange={(value) =>
+                                        setFitnessGoal(value as FitnessGoal)
+                                    }
+                                >
                                     <SelectTrigger
                                         id="fitnessGoal"
                                         className="border-border bg-card text-card-foreground"
@@ -398,6 +490,10 @@ export default function Onboarding() {
                                 <Input
                                     id="reminderTime"
                                     type="time"
+                                    value={reminderTime}
+                                    onChange={(e) =>
+                                        setReminderTime(e.target.value)
+                                    }
                                     className="border-border bg-card text-card-foreground"
                                 />
                             </div>
@@ -484,9 +580,12 @@ export default function Onboarding() {
                         <Button
                             type="submit"
                             size="lg"
+                            disabled={isSubmitting || !consent1 || !consent2}
                             className="min-w-[200px] bg-foreground text-background hover:bg-foreground/90"
                         >
-                            Complete Onboarding
+                            {isSubmitting
+                                ? "Creating Account..."
+                                : "Complete Onboarding"}
                         </Button>
                     </div>
                 </form>

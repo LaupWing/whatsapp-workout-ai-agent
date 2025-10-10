@@ -2,11 +2,58 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\WorkoutPlanStatus;
 use App\Models\User;
+use App\Models\WorkoutPlan;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class WorkoutPlanController extends Controller
 {
+    /**
+     * Store a new workout plan
+     */
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'goal' => 'required|string',
+            'muscle_groups' => 'required|array',
+            'muscle_groups.*' => 'string',
+            'primary_focus' => 'nullable|string',
+            'session_duration' => 'required|integer|min:15|max:180',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        // Get authenticated user
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        // Create workout plan
+        $workoutPlan = WorkoutPlan::create([
+            'user_id' => $user->id,
+            'name' => 'Custom Workout Plan',
+            'description' => 'AI-generated workout plan',
+            'goal' => $request->goal,
+            'status' => WorkoutPlanStatus::ACTIVE,
+            'schedule' => [
+                'muscle_groups' => $request->muscle_groups,
+                'primary_focus' => $request->primary_focus,
+                'session_duration' => $request->session_duration,
+            ],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'workout_plan' => $workoutPlan,
+        ], 201);
+    }
+
     /**
      * Get user's active workout plan
      */
