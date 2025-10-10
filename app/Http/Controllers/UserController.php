@@ -60,8 +60,8 @@ class UserController extends Controller
             'is_active' => true,
         ]);
 
-        // Create Sanctum token for the user
-        $token = $user->createToken('onboarding-token')->plainTextToken;
+        // Create Sanctum token for the user (stored in database, not returned)
+        $user->createToken('onboarding-token');
 
         // Log the user in
         Auth::login($user);
