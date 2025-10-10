@@ -329,21 +329,23 @@ function WorkoutPlanChat() {
                                 key={index}
                                 className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
                             >
-                                <div
-                                    className={`group relative max-w-[80%] rounded-2xl px-4 py-3 ${
-                                        message.type === "user"
-                                            ? "bg-green-500 text-white dark:bg-green-600"
-                                            : "border border-border bg-muted text-foreground"
-                                    }`}
-                                >
-                                    {message.content}
+                                <div className="relative flex items-start gap-2">
+                                    <div
+                                        className={`max-w-[80%] rounded-2xl px-4 py-3 ${
+                                            message.type === "user"
+                                                ? "bg-green-500 text-white dark:bg-green-600"
+                                                : "border border-border bg-muted text-foreground"
+                                        }`}
+                                    >
+                                        {message.content}
+                                    </div>
                                     {message.editable && message.step && (
                                         <button
                                             onClick={() => handleEditStep(message.step!)}
-                                            className="absolute -right-10 top-1/2 -translate-y-1/2 rounded-full p-2 opacity-0 transition-opacity hover:bg-accent group-hover:opacity-100"
+                                            className="flex-shrink-0 rounded-full p-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
                                             title="Edit"
                                         >
-                                            <Edit2 className="h-4 w-4 text-muted-foreground" />
+                                            <Edit2 className="h-4 w-4" />
                                         </button>
                                     )}
                                 </div>
