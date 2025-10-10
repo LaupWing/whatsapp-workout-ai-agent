@@ -1,50 +1,50 @@
-import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import {
     Select,
     SelectContent,
     SelectItem,
     SelectTrigger,
     SelectValue,
-} from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { useState } from 'react';
+} from "@/components/ui/select"
+import { Switch } from "@/components/ui/switch"
+import { useState } from "react"
 
 const DAYS = [
-    'Monday',
-    'Tuesday',
-    'Wednesday',
-    'Thursday',
-    'Friday',
-    'Saturday',
-    'Sunday',
-];
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+]
 
 export default function Onboarding() {
-    const [trainingLocation, setTrainingLocation] = useState<string>('');
-    const [hasDumbbells, setHasDumbbells] = useState(false);
-    const [selectedDays, setSelectedDays] = useState<string[]>([]);
-    const [receiveMotivation, setReceiveMotivation] = useState(true);
-    const [consent1, setConsent1] = useState(false);
-    const [consent2, setConsent2] = useState(false);
-    const [experienceLevel, setExperienceLevel] = useState<string>('beginner');
-    const [email, setEmail] = useState<string>('');
-    const [whatsappNumber] = useState<string>('+1 234 567 8900');
+    const [trainingLocation, setTrainingLocation] = useState<string>("")
+    const [hasDumbbells, setHasDumbbells] = useState(false)
+    const [selectedDays, setSelectedDays] = useState<string[]>([])
+    const [receiveMotivation, setReceiveMotivation] = useState(true)
+    const [consent1, setConsent1] = useState(false)
+    const [consent2, setConsent2] = useState(false)
+    const [experienceLevel, setExperienceLevel] = useState<string>("beginner")
+    const [email, setEmail] = useState<string>("")
+    const [whatsappNumber] = useState<string>("+1 234 567 8900")
 
     const toggleDay = (day: string) => {
         setSelectedDays((prev) =>
             prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
-        );
-    };
+        )
+    }
 
     const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
+        e.preventDefault()
         // Handle form submission
-        console.log('Form submitted');
-    };
+        console.log("Form submitted")
+    }
     return (
         <main className="min-h-screen bg-background">
             <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
@@ -75,7 +75,7 @@ export default function Onboarding() {
                                     htmlFor="whatsapp"
                                     className="text-foreground"
                                 >
-                                    WhatsApp Number{' '}
+                                    WhatsApp Number{" "}
                                     <span className="text-muted-foreground">
                                         *
                                     </span>
@@ -99,7 +99,7 @@ export default function Onboarding() {
                                     htmlFor="email"
                                     className="text-foreground"
                                 >
-                                    Email Address{' '}
+                                    Email Address{" "}
                                     <span className="text-muted-foreground">
                                         *
                                     </span>
@@ -403,7 +403,7 @@ export default function Onboarding() {
                                     </SelectContent>
                                 </Select>
 
-                                {trainingLocation === 'home' && (
+                                {trainingLocation === "home" && (
                                     <div className="flex items-start gap-3 rounded-md border border-border bg-card p-4">
                                         <Checkbox
                                             id="dumbbells"
@@ -420,7 +420,7 @@ export default function Onboarding() {
                                             className="cursor-pointer text-sm leading-relaxed text-card-foreground"
                                         >
                                             I have at least one pair of
-                                            dumbbells for training.{' '}
+                                            dumbbells for training.{" "}
                                             <span className="text-muted-foreground">
                                                 *
                                             </span>
@@ -520,7 +520,7 @@ export default function Onboarding() {
                                     className="cursor-pointer text-sm leading-relaxed text-foreground"
                                 >
                                     I agree to receive WhatsApp messages related
-                                    to workouts and reminders.{' '}
+                                    to workouts and reminders.{" "}
                                     <span className="text-muted-foreground">
                                         *
                                     </span>
@@ -541,7 +541,7 @@ export default function Onboarding() {
                                     className="cursor-pointer text-sm leading-relaxed text-foreground"
                                 >
                                     I consent to my data being used for
-                                    personalized fitness tracking.{' '}
+                                    personalized fitness tracking.{" "}
                                     <span className="text-muted-foreground">
                                         *
                                     </span>
@@ -563,5 +563,5 @@ export default function Onboarding() {
                 </form>
             </div>
         </main>
-    );
+    )
 }
