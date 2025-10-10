@@ -8,8 +8,12 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/onboarding', function () {
-    return Inertia::render('Onboarding');
+    return Inertia::render('onboarding');
 })->name('onboarding');
+
+Route::get('/workout-plan-chat', function () {
+    return Inertia::render('workoutPlanChat');
+})->name('workout-plan-chat');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
