@@ -12,30 +12,29 @@ import {
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { ThemeToggle } from "@/components/theme-toggle"
+import {
+    ExperienceLevel,
+    ExperienceLevelOptions,
+    FitnessGoalOptions,
+    GenderOptions,
+    TrainingLocation,
+    TrainingLocationOptions,
+    WorkoutDay,
+    WorkoutDayOptions,
+} from "@/types/enums"
 import { useState } from "react"
 
-const DAYS = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday",
-]
-
 export default function Onboarding() {
-    const [trainingLocation, setTrainingLocation] = useState<string>("")
-    const [hasDumbbells, setHasDumbbells] = useState(false)
-    const [selectedDays, setSelectedDays] = useState<string[]>([])
+    const [trainingLocation, setTrainingLocation] = useState<TrainingLocation | "">("")
+    const [selectedDays, setSelectedDays] = useState<WorkoutDay[]>([])
     const [receiveMotivation, setReceiveMotivation] = useState(true)
     const [consent1, setConsent1] = useState(false)
     const [consent2, setConsent2] = useState(false)
-    const [experienceLevel, setExperienceLevel] = useState<string>("beginner")
+    const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel>(ExperienceLevel.BEGINNER)
     const [email, setEmail] = useState<string>("")
     const [whatsappNumber] = useState<string>("+1 234 567 8900")
 
-    const toggleDay = (day: string) => {
+    const toggleDay = (day: WorkoutDay) => {
         setSelectedDays((prev) =>
             prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
         )
@@ -148,18 +147,14 @@ export default function Onboarding() {
                                             <SelectValue placeholder="Select gender" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="male">
-                                                Male
-                                            </SelectItem>
-                                            <SelectItem value="female">
-                                                Female
-                                            </SelectItem>
-                                            <SelectItem value="other">
-                                                Other
-                                            </SelectItem>
-                                            <SelectItem value="prefer-not-to-say">
-                                                Prefer not to say
-                                            </SelectItem>
+                                            {GenderOptions.map((option) => (
+                                                <SelectItem
+                                                    key={option.value}
+                                                    value={option.value}
+                                                >
+                                                    {option.label}
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -275,21 +270,14 @@ export default function Onboarding() {
                                         <SelectValue placeholder="Select your goal" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="lose-weight">
-                                            Lose Weight
-                                        </SelectItem>
-                                        <SelectItem value="build-muscle">
-                                            Build Muscle
-                                        </SelectItem>
-                                        <SelectItem value="maintain">
-                                            Maintain
-                                        </SelectItem>
-                                        <SelectItem value="strength">
-                                            Strength
-                                        </SelectItem>
-                                        <SelectItem value="endurance">
-                                            Endurance
-                                        </SelectItem>
+                                        {FitnessGoalOptions.map((option) => (
+                                            <SelectItem
+                                                key={option.value}
+                                                value={option.value}
+                                            >
+                                                {option.label}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -300,68 +288,29 @@ export default function Onboarding() {
                                 </Label>
                                 <RadioGroup
                                     value={experienceLevel}
-                                    onValueChange={setExperienceLevel}
+                                    onValueChange={(value) => setExperienceLevel(value as ExperienceLevel)}
                                     className="space-y-3"
                                 >
-                                    <div className="relative">
-                                        <RadioGroupItem
-                                            value="beginner"
-                                            id="beginner"
-                                            className="peer sr-only"
-                                        />
-                                        <Label
-                                            htmlFor="beginner"
-                                            className="flex cursor-pointer flex-col gap-1 rounded-md border-2 border-border bg-card p-4 transition-colors peer-data-[state=checked]:border-foreground peer-data-[state=checked]:bg-foreground/5 hover:border-foreground/50"
-                                        >
-                                            <span className="font-semibold text-card-foreground">
-                                                Beginner (0–1 year)
-                                            </span>
-                                            <span className="text-sm text-muted-foreground">
-                                                Just starting or returning after
-                                                a long break
-                                            </span>
-                                        </Label>
-                                    </div>
-
-                                    <div className="relative">
-                                        <RadioGroupItem
-                                            value="intermediate"
-                                            id="intermediate"
-                                            className="peer sr-only"
-                                        />
-                                        <Label
-                                            htmlFor="intermediate"
-                                            className="flex cursor-pointer flex-col gap-1 rounded-md border-2 border-border bg-card p-4 transition-colors peer-data-[state=checked]:border-foreground peer-data-[state=checked]:bg-foreground/5 hover:border-foreground/50"
-                                        >
-                                            <span className="font-semibold text-card-foreground">
-                                                Intermediate (1–3 years)
-                                            </span>
-                                            <span className="text-sm text-muted-foreground">
-                                                Consistent training experience,
-                                                understands basic form
-                                            </span>
-                                        </Label>
-                                    </div>
-
-                                    <div className="relative">
-                                        <RadioGroupItem
-                                            value="advanced"
-                                            id="advanced"
-                                            className="peer sr-only"
-                                        />
-                                        <Label
-                                            htmlFor="advanced"
-                                            className="flex cursor-pointer flex-col gap-1 rounded-md border-2 border-border bg-card p-4 transition-colors peer-data-[state=checked]:border-foreground peer-data-[state=checked]:bg-foreground/5 hover:border-foreground/50"
-                                        >
-                                            <span className="font-semibold text-card-foreground">
-                                                Advanced (3+ years)
-                                            </span>
-                                            <span className="text-sm text-muted-foreground">
-                                                Regular training, focused goals,
-                                                solid technique
-                                            </span>
-                                        </Label>
-                                    </div>
+                                    {ExperienceLevelOptions.map((option) => (
+                                        <div key={option.value} className="relative">
+                                            <RadioGroupItem
+                                                value={option.value}
+                                                id={option.value}
+                                                className="peer sr-only"
+                                            />
+                                            <Label
+                                                htmlFor={option.value}
+                                                className="flex cursor-pointer flex-col gap-1 rounded-md border-2 border-border bg-card p-4 transition-colors peer-data-[state=checked]:border-foreground peer-data-[state=checked]:bg-foreground/5 hover:border-foreground/50"
+                                            >
+                                                <span className="font-semibold text-card-foreground">
+                                                    {option.label} ({option.description})
+                                                </span>
+                                                <span className="text-sm text-muted-foreground">
+                                                    {option.fullDescription}
+                                                </span>
+                                            </Label>
+                                        </div>
+                                    ))}
                                 </RadioGroup>
                             </div>
                         </div>
@@ -388,7 +337,7 @@ export default function Onboarding() {
                                 </Label>
                                 <Select
                                     value={trainingLocation}
-                                    onValueChange={setTrainingLocation}
+                                    onValueChange={(value) => setTrainingLocation(value as TrainingLocation)}
                                 >
                                     <SelectTrigger
                                         id="trainingLocation"
@@ -397,40 +346,16 @@ export default function Onboarding() {
                                         <SelectValue placeholder="Select location" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="gym">Gym</SelectItem>
-                                        <SelectItem value="home">
-                                            Home (Dumbbell required)
-                                        </SelectItem>
-                                        <SelectItem value="both">
-                                            Both
-                                        </SelectItem>
+                                        {TrainingLocationOptions.map((option) => (
+                                            <SelectItem
+                                                key={option.value}
+                                                value={option.value}
+                                            >
+                                                {option.label}
+                                            </SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
-
-                                {trainingLocation === "home" && (
-                                    <div className="flex items-start gap-3 rounded-md border border-border bg-card p-4">
-                                        <Checkbox
-                                            id="dumbbells"
-                                            checked={hasDumbbells}
-                                            onCheckedChange={(checked) =>
-                                                setHasDumbbells(
-                                                    checked as boolean,
-                                                )
-                                            }
-                                            required
-                                        />
-                                        <Label
-                                            htmlFor="dumbbells"
-                                            className="cursor-pointer text-sm leading-relaxed text-card-foreground"
-                                        >
-                                            I have at least one pair of
-                                            dumbbells for training.{" "}
-                                            <span className="text-muted-foreground">
-                                                *
-                                            </span>
-                                        </Label>
-                                    </div>
-                                )}
                             </div>
 
                             <div className="space-y-3">
@@ -438,25 +363,25 @@ export default function Onboarding() {
                                     Workout Days
                                 </Label>
                                 <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                                    {DAYS.map((day) => (
+                                    {WorkoutDayOptions.map((option) => (
                                         <div
-                                            key={day}
+                                            key={option.value}
                                             className="flex items-center gap-2 rounded-md border border-border bg-card p-3"
                                         >
                                             <Checkbox
-                                                id={day}
+                                                id={option.value}
                                                 checked={selectedDays.includes(
-                                                    day,
+                                                    option.value,
                                                 )}
                                                 onCheckedChange={() =>
-                                                    toggleDay(day)
+                                                    toggleDay(option.value)
                                                 }
                                             />
                                             <Label
-                                                htmlFor={day}
+                                                htmlFor={option.value}
                                                 className="cursor-pointer text-sm text-card-foreground"
                                             >
-                                                {day.slice(0, 3)}
+                                                {option.shortLabel}
                                             </Label>
                                         </div>
                                     ))}

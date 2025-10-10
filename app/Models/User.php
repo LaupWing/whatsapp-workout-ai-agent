@@ -3,6 +3,10 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\ExperienceLevel;
+use App\Enums\FitnessGoal;
+use App\Enums\Gender;
+use App\Enums\TrainingLocation;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -62,6 +66,10 @@ class User extends Authenticatable
         return [
             // 'email_verified_at' => 'datetime',
             // 'password' => 'hashed',
+            'gender' => Gender::class,
+            'fitness_goal' => FitnessGoal::class,
+            'experience_level' => ExperienceLevel::class,
+            'training_location' => TrainingLocation::class,
             'workout_days' => 'array',
             'receive_motivation' => 'boolean',
             'whatsapp_consent' => 'boolean',

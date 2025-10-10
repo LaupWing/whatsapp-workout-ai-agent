@@ -1,5 +1,9 @@
 <?php
 
+use App\Enums\ExperienceLevel;
+use App\Enums\FitnessGoal;
+use App\Enums\Gender;
+use App\Enums\TrainingLocation;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -18,7 +22,7 @@ return new class extends Migration
             $table->string('whatsapp_number')->unique(); // User's WhatsApp number
 
             // Basic Information
-            $table->enum('gender', ['male', 'female', 'other', 'prefer_not_to_say'])->nullable();
+            $table->enum('gender', Gender::values())->nullable();
             $table->integer('age')->nullable();
 
             // Body Stats
@@ -27,12 +31,12 @@ return new class extends Migration
             $table->decimal('target_weight_kg', 5, 2)->nullable();
 
             // Fitness Profile
-            $table->enum('fitness_goal', ['lose_weight', 'build_muscle', 'maintain', 'strength', 'endurance'])->nullable();
-            $table->enum('experience_level', ['beginner', 'intermediate', 'advanced'])->default('beginner');
+            $table->enum('fitness_goal', FitnessGoal::values())->nullable();
+            $table->enum('experience_level', ExperienceLevel::values())->default(ExperienceLevel::BEGINNER->value);
 
-            // Training Preferences (Note: Home training requires dumbbells)
-            $table->enum('training_location', ['gym', 'home', 'both'])->nullable();
-            $table->json('workout_days')->nullable(); // Array of selected days: ["Monday", "Wednesday", "Friday"]
+            // Training Preferences
+            $table->enum('training_location', TrainingLocation::values())->nullable();
+            $table->json('workout_days')->nullable(); // Array of WorkoutDay values: ["monday", "wednesday", "friday"]
             $table->time('preferred_reminder_time')->nullable(); // Time for daily reminders
             $table->boolean('receive_motivation')->default(true); // Daily motivation messages
 
