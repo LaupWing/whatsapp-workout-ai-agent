@@ -1,19 +1,20 @@
 import React from "react"
 
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
 import {
     MuscleGroup,
     MuscleGroupOptions,
     WorkoutPlanGoal,
     WorkoutPlanGoalOptions,
 } from "@/types/enums"
+import { Edit2 } from "lucide-react"
 import { useState } from "react"
 
 type Message = {
-    type: "ai" | "user"
+    type: "ai" | "user" | "choices"
     content: string | React.ReactNode
+    step?: Step
+    editable?: boolean
 }
 
 type Step = "goal" | "muscles" | "focus" | "duration" | "summary"
@@ -24,6 +25,11 @@ function WorkoutPlanChat() {
             type: "ai",
             content:
                 "Hi! Let's create your personalized workout plan 💪 First, what's your primary fitness goal?",
+        },
+        {
+            type: "choices",
+            content: "goal-choices",
+            step: "goal",
         },
     ])
 
@@ -47,15 +53,40 @@ function WorkoutPlanChat() {
             (opt) => opt.value === goal,
         )
         setMessages((prev) => [
-            ...prev,
-            { type: "user", content: goalOption?.label || goal },
+            ...prev.filter((m) => m.step !== "goal"),
+            { type: "user", content: goalOption?.label || goal, step: "goal", editable: true },
             {
                 type: "ai",
                 content:
                     "Great choice! Which muscle groups do you want to train? All groups are selected by default - uncheck any you want to skip.",
             },
+            {
+                type: "choices",
+                content: "muscles-choices",
+                step: "muscles",
+            },
         ])
         setCurrentStep("muscles")
+    }
+
+    const handleEditStep = (step: Step) => {
+        setCurrentStep(step)
+        // Remove all messages after this step
+        setMessages((prev) => {
+            const stepIndex = prev.findIndex((m) => m.step === step && m.type === "user")
+            if (stepIndex === -1) return prev
+            return prev.slice(0, stepIndex)
+        })
+
+        // Re-add the choices for this step
+        setMessages((prev) => [
+            ...prev,
+            {
+                type: "choices",
+                content: `${step}-choices`,
+                step: step,
+            },
+        ])
     }
 
     const handleMusclesContinue = () => {
@@ -65,12 +96,17 @@ function WorkoutPlanChat() {
             (m) => MuscleGroupOptions.find((opt) => opt.value === m)?.label || m,
         )
         setMessages((prev) => [
-            ...prev,
-            { type: "user", content: muscleLabels.join(", ") },
+            ...prev.filter((m) => m.step !== "muscles"),
+            { type: "user", content: muscleLabels.join(", "), step: "muscles", editable: true },
             {
                 type: "ai",
                 content:
                     "Which muscle group would you like to prioritize? This will get extra attention in your plan ⭐",
+            },
+            {
+                type: "choices",
+                content: "focus-choices",
+                step: "focus",
             },
         ])
         setCurrentStep("focus")
@@ -84,11 +120,16 @@ function WorkoutPlanChat() {
                 : MuscleGroupOptions.find((opt) => opt.value === focus)?.label ||
                   focus
         setMessages((prev) => [
-            ...prev,
-            { type: "user", content: focusLabel },
+            ...prev.filter((m) => m.step !== "focus"),
+            { type: "user", content: focusLabel, step: "focus", editable: true },
             {
                 type: "ai",
                 content: "How long do you want each workout session to be?",
+            },
+            {
+                type: "choices",
+                content: "duration-choices",
+                step: "duration",
             },
         ])
         setCurrentStep("duration")
@@ -109,8 +150,8 @@ function WorkoutPlanChat() {
                       ?.label || primaryFocus
 
         setMessages((prev) => [
-            ...prev,
-            { type: "user", content: `${mins} minutes` },
+            ...prev.filter((m) => m.step !== "duration"),
+            { type: "user", content: `${mins} minutes`, step: "duration", editable: true },
             {
                 type: "ai",
                 content: (
@@ -155,6 +196,11 @@ function WorkoutPlanChat() {
                     </div>
                 ),
             },
+            {
+                type: "choices",
+                content: "summary-choices",
+                step: "summary",
+            },
         ])
         setCurrentStep("summary")
     }
@@ -166,139 +212,146 @@ function WorkoutPlanChat() {
                 : [...prev, muscle],
         )
     }
-    return (
-        <main className="min-h-screen bg-background">
-            <div className="mx-auto flex min-h-screen max-w-3xl flex-col px-4 py-8">
-                {/* Messages */}
-                <div className="mb-6 flex-1 space-y-6">
-                    {messages.map((message, index) => (
-                        <div
-                            key={index}
-                            className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
-                        >
-                            <div
-                                className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                                    message.type === "user"
-                                        ? "bg-green-500 text-white dark:bg-green-600"
-                                        : "border border-border bg-muted text-foreground"
-                                }`}
+    const renderChoices = (step: Step) => {
+        switch (step) {
+            case "goal":
+                return (
+                    <div className="flex flex-wrap gap-2 justify-end">
+                        {WorkoutPlanGoalOptions.map((option) => (
+                            <button
+                                key={option.value}
+                                onClick={() => handleGoalSelect(option.value)}
+                                className="rounded-2xl border border-border bg-card px-4 py-2 text-sm text-card-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                             >
-                                {message.content}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Input Area */}
-                <div className="border-t border-border pt-6">
-                    {currentStep === "goal" && (
-                        <div className="flex flex-wrap gap-2">
-                            {WorkoutPlanGoalOptions.map((option) => (
-                                <Button
+                                {option.label}
+                            </button>
+                        ))}
+                    </div>
+                )
+            case "muscles":
+                return (
+                    <div className="space-y-3">
+                        <div className="flex flex-wrap gap-2 justify-end">
+                            {MuscleGroupOptions.map((option) => (
+                                <button
                                     key={option.value}
-                                    onClick={() => handleGoalSelect(option.value)}
-                                    variant="outline"
-                                    className="border-border bg-card text-card-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                                    onClick={() => toggleMuscle(option.value)}
+                                    className={`rounded-2xl border px-4 py-2 text-sm transition-colors ${
+                                        selectedMuscles.includes(option.value)
+                                            ? "border-primary bg-primary/20 text-foreground"
+                                            : "border-border bg-card text-card-foreground hover:bg-accent"
+                                    }`}
                                 >
-                                    {option.label}
-                                </Button>
+                                    {option.label} {selectedMuscles.includes(option.value) && "✓"}
+                                </button>
                             ))}
                         </div>
-                    )}
-
-                    {currentStep === "muscles" && (
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                                {MuscleGroupOptions.map((option) => (
-                                    <div
-                                        key={option.value}
-                                        onClick={() => toggleMuscle(option.value)}
-                                        className={`flex cursor-pointer items-center gap-2 rounded-lg border p-3 transition-colors ${
-                                            selectedMuscles.includes(option.value)
-                                                ? "border-primary bg-primary/10"
-                                                : "border-border bg-card hover:border-primary/50"
-                                        }`}
-                                    >
-                                        <Checkbox
-                                            id={option.value}
-                                            checked={selectedMuscles.includes(
-                                                option.value,
-                                            )}
-                                            onCheckedChange={() =>
-                                                toggleMuscle(option.value)
-                                            }
-                                        />
-                                        <Label
-                                            htmlFor={option.value}
-                                            className="cursor-pointer text-sm text-foreground"
-                                        >
-                                            {option.label}
-                                        </Label>
-                                    </div>
-                                ))}
-                            </div>
+                        <div className="flex justify-end">
                             <Button
                                 onClick={handleMusclesContinue}
                                 disabled={selectedMuscles.length === 0}
-                                className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                                size="sm"
+                                className="bg-primary text-primary-foreground hover:bg-primary/90"
                             >
                                 Continue
                             </Button>
                         </div>
-                    )}
-
-                    {currentStep === "focus" && (
-                        <div className="flex flex-wrap gap-2">
-                            {selectedMuscles.map((muscle) => {
-                                const option = MuscleGroupOptions.find(
-                                    (opt) => opt.value === muscle,
-                                )
-                                return (
-                                    <Button
-                                        key={muscle}
-                                        onClick={() => handleFocusSelect(muscle)}
-                                        variant="outline"
-                                        className="border-border bg-card text-card-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                                    >
-                                        {option?.label || muscle}
-                                    </Button>
-                                )
-                            })}
-                            <Button
-                                onClick={() =>
-                                    handleFocusSelect("No Preference")
-                                }
-                                variant="outline"
-                                className="border-border bg-card text-card-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                            >
-                                No Preference
-                            </Button>
-                        </div>
-                    )}
-
-                    {currentStep === "duration" && (
-                        <div className="flex flex-wrap gap-2">
-                            {durations.map((mins) => (
-                                <Button
-                                    key={mins}
-                                    onClick={() => handleDurationSelect(mins)}
-                                    variant="outline"
-                                    className="border-border bg-card text-card-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                    </div>
+                )
+            case "focus":
+                return (
+                    <div className="flex flex-wrap gap-2 justify-end">
+                        {selectedMuscles.map((muscle) => {
+                            const option = MuscleGroupOptions.find(
+                                (opt) => opt.value === muscle,
+                            )
+                            return (
+                                <button
+                                    key={muscle}
+                                    onClick={() => handleFocusSelect(muscle)}
+                                    className="rounded-2xl border border-border bg-card px-4 py-2 text-sm text-card-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                                 >
-                                    {mins} minutes
-                                </Button>
-                            ))}
-                        </div>
-                    )}
+                                    {option?.label || muscle}
+                                </button>
+                            )
+                        })}
+                        <button
+                            onClick={() => handleFocusSelect("No Preference")}
+                            className="rounded-2xl border border-border bg-card px-4 py-2 text-sm text-card-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                        >
+                            No Preference
+                        </button>
+                    </div>
+                )
+            case "duration":
+                return (
+                    <div className="flex flex-wrap gap-2 justify-end">
+                        {durations.map((mins) => (
+                            <button
+                                key={mins}
+                                onClick={() => handleDurationSelect(mins)}
+                                className="rounded-2xl border border-border bg-card px-4 py-2 text-sm text-card-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                            >
+                                {mins} min
+                            </button>
+                        ))}
+                    </div>
+                )
+            case "summary":
+                return (
+                    <div className="flex justify-end">
+                        <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                            Generate My Workout Plan
+                        </Button>
+                    </div>
+                )
+        }
+    }
 
-                    {currentStep === "summary" && (
-                        <div className="text-center">
-                            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
-                                Generate My Workout Plan
-                            </Button>
-                        </div>
-                    )}
+    return (
+        <main className="min-h-screen bg-background">
+            <div className="mx-auto flex min-h-screen max-w-3xl flex-col px-4 py-8">
+                {/* Messages */}
+                <div className="mb-6 flex-1 space-y-4">
+                    {messages.map((message, index) => {
+                        if (message.type === "choices") {
+                            return (
+                                <div key={index} className="flex justify-end">
+                                    <div className="max-w-[85%]">
+                                        {renderChoices(message.step!)}
+                                    </div>
+                                </div>
+                            )
+                        }
+
+                        return (
+                            <div
+                                key={index}
+                                className={`flex ${message.type === "user" ? "justify-end" : "justify-start"}`}
+                            >
+                                <div
+                                    className={`group relative max-w-[80%] rounded-2xl px-4 py-3 ${
+                                        message.type === "user"
+                                            ? "bg-green-500 text-white dark:bg-green-600"
+                                            : "border border-border bg-muted text-foreground"
+                                    }`}
+                                >
+                                    {message.content}
+                                    {message.editable && message.step && (
+                                        <button
+                                            onClick={() => handleEditStep(message.step!)}
+                                            className="absolute -right-10 top-1/2 -translate-y-1/2 rounded-full p-2 opacity-0 transition-opacity hover:bg-accent group-hover:opacity-100"
+                                            title="Edit"
+                                        >
+                                            <Edit2 className="h-4 w-4 text-muted-foreground" />
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        )
+                    })}
                 </div>
+
             </div>
         </main>
     )
