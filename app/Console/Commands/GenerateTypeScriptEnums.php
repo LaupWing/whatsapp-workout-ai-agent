@@ -12,11 +12,22 @@ class GenerateTypeScriptEnums extends Command
     protected $description = 'Generate TypeScript enums from PHP enums';
 
     private array $enums = [
+        // User enums
         \App\Enums\Gender::class,
         \App\Enums\FitnessGoal::class,
         \App\Enums\ExperienceLevel::class,
         \App\Enums\TrainingLocation::class,
         \App\Enums\WorkoutDay::class,
+
+        // Exercise enums
+        \App\Enums\ExerciseCategory::class,
+        \App\Enums\MuscleGroup::class,
+        \App\Enums\Equipment::class,
+        \App\Enums\ExerciseDifficulty::class,
+
+        // Workout Plan enums
+        \App\Enums\WorkoutPlanGoal::class,
+        \App\Enums\WorkoutPlanStatus::class,
     ];
 
     public function handle(): int

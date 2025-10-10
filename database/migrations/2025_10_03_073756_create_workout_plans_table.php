@@ -1,5 +1,7 @@
 <?php
 
+use App\Enums\WorkoutPlanGoal;
+use App\Enums\WorkoutPlanStatus;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -16,12 +18,12 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('name'); // "12-Week Strength Program", "PPL Split"
             $table->text('description')->nullable();
-            $table->enum('goal', ['strength', 'hypertrophy', 'endurance', 'weight_loss', 'general_fitness']);
+            $table->enum('goal', WorkoutPlanGoal::values());
             $table->integer('duration_weeks')->nullable(); // How many weeks is the program
             $table->date('start_date');
             $table->date('end_date')->nullable();
-            $table->enum('status', ['active', 'completed', 'paused', 'archived'])
-                ->default('active');
+            $table->enum('status', WorkoutPlanStatus::values())
+                ->default(WorkoutPlanStatus::ACTIVE->value);
             $table->json('schedule')->nullable(); // {"monday": "push", "wednesday": "pull", "friday": "legs"}
             $table->text('notes')->nullable();
             $table->timestamps();

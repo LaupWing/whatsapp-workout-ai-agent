@@ -2,6 +2,10 @@
 
 namespace App\Models;
 
+use App\Enums\Equipment;
+use App\Enums\ExerciseCategory;
+use App\Enums\ExerciseDifficulty;
+use App\Enums\MuscleGroup;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -23,6 +27,10 @@ class Exercise extends Model
     ];
 
     protected $casts = [
+        'category' => ExerciseCategory::class,
+        'muscle_group' => MuscleGroup::class,
+        'equipment' => Equipment::class,
+        'difficulty' => ExerciseDifficulty::class,
         'aliases' => 'array',
         'tags' => 'array',
         'is_active' => 'boolean',

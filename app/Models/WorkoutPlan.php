@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\WorkoutPlanGoal;
+use App\Enums\WorkoutPlanStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -23,6 +25,8 @@ class WorkoutPlan extends Model
     ];
 
     protected $casts = [
+        'goal' => WorkoutPlanGoal::class,
+        'status' => WorkoutPlanStatus::class,
         'schedule' => 'array',
         'start_date' => 'date',
         'end_date' => 'date',

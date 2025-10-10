@@ -187,3 +187,220 @@ export const WorkoutDayOptions: WorkoutDayOption[] = [
     },
 ]
 
+// ExerciseCategory
+export enum ExerciseCategory {
+    STRENGTH = 'strength',
+    CARDIO = 'cardio',
+    FLEXIBILITY = 'flexibility',
+    SPORTS = 'sports',
+}
+
+export interface ExerciseCategoryOption {
+    value: ExerciseCategory
+    label: string
+}
+
+export const ExerciseCategoryOptions: ExerciseCategoryOption[] = [
+    {
+        value: ExerciseCategory.STRENGTH,
+        label: "Strength",
+    },
+    {
+        value: ExerciseCategory.CARDIO,
+        label: "Cardio",
+    },
+    {
+        value: ExerciseCategory.FLEXIBILITY,
+        label: "Flexibility",
+    },
+    {
+        value: ExerciseCategory.SPORTS,
+        label: "Sports",
+    },
+]
+
+// MuscleGroup
+export enum MuscleGroup {
+    CHEST = 'chest',
+    LEGS = 'legs',
+    BACK = 'back',
+    SHOULDERS = 'shoulders',
+    ARMS = 'arms',
+    CORE = 'core',
+    FULL_BODY = 'full_body',
+}
+
+export interface MuscleGroupOption {
+    value: MuscleGroup
+    label: string
+}
+
+export const MuscleGroupOptions: MuscleGroupOption[] = [
+    {
+        value: MuscleGroup.CHEST,
+        label: "Chest",
+    },
+    {
+        value: MuscleGroup.LEGS,
+        label: "Legs",
+    },
+    {
+        value: MuscleGroup.BACK,
+        label: "Back",
+    },
+    {
+        value: MuscleGroup.SHOULDERS,
+        label: "Shoulders",
+    },
+    {
+        value: MuscleGroup.ARMS,
+        label: "Arms",
+    },
+    {
+        value: MuscleGroup.CORE,
+        label: "Core",
+    },
+    {
+        value: MuscleGroup.FULL_BODY,
+        label: "Full Body",
+    },
+]
+
+// Equipment
+export enum Equipment {
+    BARBELL = 'barbell',
+    DUMBBELL = 'dumbbell',
+    MACHINE = 'machine',
+    BODYWEIGHT = 'bodyweight',
+    CABLE = 'cable',
+    OTHER = 'other',
+}
+
+export interface EquipmentOption {
+    value: Equipment
+    label: string
+}
+
+export const EquipmentOptions: EquipmentOption[] = [
+    {
+        value: Equipment.BARBELL,
+        label: "Barbell",
+    },
+    {
+        value: Equipment.DUMBBELL,
+        label: "Dumbbell",
+    },
+    {
+        value: Equipment.MACHINE,
+        label: "Machine",
+    },
+    {
+        value: Equipment.BODYWEIGHT,
+        label: "Bodyweight",
+    },
+    {
+        value: Equipment.CABLE,
+        label: "Cable",
+    },
+    {
+        value: Equipment.OTHER,
+        label: "Other",
+    },
+]
+
+// ExerciseDifficulty
+export enum ExerciseDifficulty {
+    BEGINNER = 'beginner',
+    INTERMEDIATE = 'intermediate',
+    ADVANCED = 'advanced',
+}
+
+export interface ExerciseDifficultyOption {
+    value: ExerciseDifficulty
+    label: string
+}
+
+export const ExerciseDifficultyOptions: ExerciseDifficultyOption[] = [
+    {
+        value: ExerciseDifficulty.BEGINNER,
+        label: "Beginner",
+    },
+    {
+        value: ExerciseDifficulty.INTERMEDIATE,
+        label: "Intermediate",
+    },
+    {
+        value: ExerciseDifficulty.ADVANCED,
+        label: "Advanced",
+    },
+]
+
+// WorkoutPlanGoal
+export enum WorkoutPlanGoal {
+    STRENGTH = 'strength',
+    HYPERTROPHY = 'hypertrophy',
+    ENDURANCE = 'endurance',
+    WEIGHT_LOSS = 'weight_loss',
+    GENERAL_FITNESS = 'general_fitness',
+}
+
+export interface WorkoutPlanGoalOption {
+    value: WorkoutPlanGoal
+    label: string
+}
+
+export const WorkoutPlanGoalOptions: WorkoutPlanGoalOption[] = [
+    {
+        value: WorkoutPlanGoal.STRENGTH,
+        label: "Strength",
+    },
+    {
+        value: WorkoutPlanGoal.HYPERTROPHY,
+        label: "Hypertrophy",
+    },
+    {
+        value: WorkoutPlanGoal.ENDURANCE,
+        label: "Endurance",
+    },
+    {
+        value: WorkoutPlanGoal.WEIGHT_LOSS,
+        label: "Weight Loss",
+    },
+    {
+        value: WorkoutPlanGoal.GENERAL_FITNESS,
+        label: "General Fitness",
+    },
+]
+
+// WorkoutPlanStatus
+export enum WorkoutPlanStatus {
+    ACTIVE = 'active',
+    COMPLETED = 'completed',
+    PAUSED = 'paused',
+    ARCHIVED = 'archived',
+}
+
+export interface WorkoutPlanStatusOption {
+    value: WorkoutPlanStatus
+    label: string
+}
+
+export const WorkoutPlanStatusOptions: WorkoutPlanStatusOption[] = [
+    {
+        value: WorkoutPlanStatus.ACTIVE,
+        label: "Active",
+    },
+    {
+        value: WorkoutPlanStatus.COMPLETED,
+        label: "Completed",
+    },
+    {
+        value: WorkoutPlanStatus.PAUSED,
+        label: "Paused",
+    },
+    {
+        value: WorkoutPlanStatus.ARCHIVED,
+        label: "Archived",
+    },
+]
+
