@@ -16,7 +16,7 @@ Route::post('/onboarding', [UserController::class, 'store'])->name('onboarding.s
 
 Route::get('/workout-plan-chat', function () {
     return Inertia::render('workoutPlanChat');
-})->middleware('auth')->name('workout-plan-chat');
+})->name('workout-plan-chat');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {

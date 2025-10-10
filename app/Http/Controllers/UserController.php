@@ -63,6 +63,6 @@ class UserController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
-        return redirect()->route('workout-plan-chat');
+        return redirect('/workout-plan-chat');
     }
 }
