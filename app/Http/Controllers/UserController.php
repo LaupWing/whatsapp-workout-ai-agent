@@ -57,11 +57,10 @@ class UserController extends Controller
             'is_active' => true,
         ]);
 
-        // Create Sanctum token for the user (stored in database, not returned)
-        $user->createToken('onboarding-token');
-
-        // Log the user in
+        // Log the user in (session-based authentication for Inertia.js)
         Auth::login($user);
+
+        // Regenerate session ID for security (prevents session fixation attacks)
         $request->session()->regenerate();
 
         return to_route('workout-plan-chat');
