@@ -24,94 +24,41 @@ import {
     WorkoutDay,
     WorkoutDayOptions,
 } from "@/types/enums"
-import { router } from "@inertiajs/react"
-import { useState } from "react"
+import { useForm } from "@inertiajs/react"
 
 export default function Onboarding() {
-    // Basic Information
-    const [whatsappNumber] = useState<string>("+1 234 567 8900")
-    const [email, setEmail] = useState<string>("")
-    const [fullName, setFullName] = useState<string>("")
-    const [gender, setGender] = useState<Gender | "">("")
-    const [age, setAge] = useState<string>("")
-
-    // Body Stats
-    const [height, setHeight] = useState<string>("")
-    const [currentWeight, setCurrentWeight] = useState<string>("")
-    const [targetWeight, setTargetWeight] = useState<string>("")
-
-    // Fitness Profile
-    const [fitnessGoal, setFitnessGoal] = useState<FitnessGoal | "">("")
-    const [experienceLevel, setExperienceLevel] = useState<ExperienceLevel>(
-        ExperienceLevel.BEGINNER,
-    )
-
-    // Preferences
-    const [trainingLocation, setTrainingLocation] = useState<
-        TrainingLocation | ""
-    >("")
-    const [selectedDays, setSelectedDays] = useState<WorkoutDay[]>([])
-    const [reminderTime, setReminderTime] = useState<string>("")
-    const [receiveMotivation, setReceiveMotivation] = useState(true)
-
-    // Consent
-    const [consent1, setConsent1] = useState(false)
-    const [consent2, setConsent2] = useState(false)
-
-    // Loading state
-    const [isSubmitting, setIsSubmitting] = useState(false)
+    const { data, setData, post, processing, errors } = useForm({
+        whatsapp_number: "+1 234 567 8900",
+        email: "",
+        name: "",
+        gender: null as Gender | null,
+        age: null as number | null,
+        height: null as number | null,
+        current_weight: null as number | null,
+        target_weight: null as number | null,
+        fitness_goal: null as FitnessGoal | null,
+        experience_level: ExperienceLevel.BEGINNER,
+        training_location: null as TrainingLocation | null,
+        workout_days: [] as WorkoutDay[],
+        reminder_time: null as string | null,
+        receive_motivation_messages: true,
+        consent_whatsapp: false,
+        consent_data_usage: false,
+    })
 
     const toggleDay = (day: WorkoutDay) => {
-        setSelectedDays((prev) =>
-            prev.includes(day)
-                ? prev.filter((d) => d !== day)
-                : [...prev, day],
+        const currentDays = data.workout_days
+        setData(
+            "workout_days",
+            currentDays.includes(day)
+                ? currentDays.filter((d) => d !== day)
+                : [...currentDays, day],
         )
     }
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-        setIsSubmitting(true)
-
-        router.post(
-            "/onboarding",
-            {
-                whatsapp_number: whatsappNumber,
-                email,
-                name: fullName,
-                gender: gender || null,
-                age: age ? parseInt(age) : null,
-                height: height ? parseFloat(height) : null,
-                current_weight: currentWeight
-                    ? parseFloat(currentWeight)
-                    : null,
-                target_weight: targetWeight ? parseFloat(targetWeight) : null,
-                fitness_goal: fitnessGoal || null,
-                experience_level: experienceLevel,
-                training_location: trainingLocation || null,
-                workout_days: selectedDays,
-                reminder_time: reminderTime || null,
-                receive_motivation_messages: receiveMotivation,
-                consent_whatsapp: consent1,
-                consent_data_usage: consent2,
-            },
-            {
-                onSuccess: () => {
-                    // Redirect to workout plan chat will be handled by backend
-                },
-                onError: (errors) => {
-                    console.error("Error creating user:", errors)
-                    alert(
-                        "Failed to create account. Please check your information and try again.",
-                    )
-                    setIsSubmitting(false)
-                },
-                onFinish: () => {
-                    // Always reset submitting state when request finishes
-                    setIsSubmitting(false)
-                },
-            },
-        )
+        post("/onboarding")
     }
     return (
         <main className="min-h-screen bg-background">
@@ -154,15 +101,19 @@ export default function Onboarding() {
                                 <Input
                                     id="whatsapp"
                                     type="tel"
-                                    value={whatsappNumber}
+                                    value={data.whatsapp_number}
                                     readOnly
-                                    required
                                     className="cursor-not-allowed border-border bg-card text-card-foreground opacity-60"
                                 />
                                 <p className="text-sm text-muted-foreground">
                                     Used for identification and WhatsApp
                                     communication
                                 </p>
+                                {errors.whatsapp_number && (
+                                    <p className="text-sm text-red-500">
+                                        {errors.whatsapp_number}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="space-y-2">
@@ -179,11 +130,17 @@ export default function Onboarding() {
                                     id="email"
                                     type="email"
                                     placeholder="john@example.com"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    required
+                                    value={data.email}
+                                    onChange={(e) =>
+                                        setData("email", e.target.value)
+                                    }
                                     className="border-border bg-card text-card-foreground"
                                 />
+                                {errors.email && (
+                                    <p className="text-sm text-red-500">
+                                        {errors.email}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="grid gap-4 sm:grid-cols-2">
@@ -198,12 +155,17 @@ export default function Onboarding() {
                                         id="fullName"
                                         type="text"
                                         placeholder="John Doe"
-                                        value={fullName}
+                                        value={data.name || ""}
                                         onChange={(e) =>
-                                            setFullName(e.target.value)
+                                            setData("name", e.target.value)
                                         }
                                         className="border-border bg-card text-card-foreground"
                                     />
+                                    {errors.name && (
+                                        <p className="text-sm text-red-500">
+                                            {errors.name}
+                                        </p>
+                                    )}
                                 </div>
 
                                 <div className="space-y-2">
@@ -214,9 +176,9 @@ export default function Onboarding() {
                                         Gender
                                     </Label>
                                     <Select
-                                        value={gender}
+                                        value={data.gender || ""}
                                         onValueChange={(value) =>
-                                            setGender(value as Gender)
+                                            setData("gender", value as Gender)
                                         }
                                     >
                                         <SelectTrigger
@@ -236,6 +198,11 @@ export default function Onboarding() {
                                             ))}
                                         </SelectContent>
                                     </Select>
+                                    {errors.gender && (
+                                        <p className="text-sm text-red-500">
+                                            {errors.gender}
+                                        </p>
+                                    )}
                                 </div>
                             </div>
 
@@ -250,12 +217,24 @@ export default function Onboarding() {
                                     id="age"
                                     type="number"
                                     placeholder="25"
-                                    value={age}
-                                    onChange={(e) => setAge(e.target.value)}
+                                    value={data.age || ""}
+                                    onChange={(e) =>
+                                        setData(
+                                            "age",
+                                            e.target.value
+                                                ? parseInt(e.target.value)
+                                                : null,
+                                        )
+                                    }
                                     min="1"
                                     max="120"
                                     className="border-border bg-card text-card-foreground"
                                 />
+                                {errors.age && (
+                                    <p className="text-sm text-red-500">
+                                        {errors.age}
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </section>
@@ -283,11 +262,23 @@ export default function Onboarding() {
                                     id="height"
                                     type="number"
                                     placeholder="175"
-                                    value={height}
-                                    onChange={(e) => setHeight(e.target.value)}
+                                    value={data.height || ""}
+                                    onChange={(e) =>
+                                        setData(
+                                            "height",
+                                            e.target.value
+                                                ? parseFloat(e.target.value)
+                                                : null,
+                                        )
+                                    }
                                     min="1"
                                     className="border-border bg-card text-card-foreground"
                                 />
+                                {errors.height && (
+                                    <p className="text-sm text-red-500">
+                                        {errors.height}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="space-y-2">
@@ -301,14 +292,24 @@ export default function Onboarding() {
                                     id="currentWeight"
                                     type="number"
                                     placeholder="70"
-                                    value={currentWeight}
+                                    value={data.current_weight || ""}
                                     onChange={(e) =>
-                                        setCurrentWeight(e.target.value)
+                                        setData(
+                                            "current_weight",
+                                            e.target.value
+                                                ? parseFloat(e.target.value)
+                                                : null,
+                                        )
                                     }
                                     min="1"
                                     step="0.1"
                                     className="border-border bg-card text-card-foreground"
                                 />
+                                {errors.current_weight && (
+                                    <p className="text-sm text-red-500">
+                                        {errors.current_weight}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="space-y-2">
@@ -322,14 +323,24 @@ export default function Onboarding() {
                                     id="targetWeight"
                                     type="number"
                                     placeholder="65"
-                                    value={targetWeight}
+                                    value={data.target_weight || ""}
                                     onChange={(e) =>
-                                        setTargetWeight(e.target.value)
+                                        setData(
+                                            "target_weight",
+                                            e.target.value
+                                                ? parseFloat(e.target.value)
+                                                : null,
+                                        )
                                     }
                                     min="1"
                                     step="0.1"
                                     className="border-border bg-card text-card-foreground"
                                 />
+                                {errors.target_weight && (
+                                    <p className="text-sm text-red-500">
+                                        {errors.target_weight}
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </section>
@@ -354,9 +365,12 @@ export default function Onboarding() {
                                     Fitness Goal
                                 </Label>
                                 <Select
-                                    value={fitnessGoal}
+                                    value={data.fitness_goal || ""}
                                     onValueChange={(value) =>
-                                        setFitnessGoal(value as FitnessGoal)
+                                        setData(
+                                            "fitness_goal",
+                                            value as FitnessGoal,
+                                        )
                                     }
                                 >
                                     <SelectTrigger
@@ -376,6 +390,11 @@ export default function Onboarding() {
                                         ))}
                                     </SelectContent>
                                 </Select>
+                                {errors.fitness_goal && (
+                                    <p className="text-sm text-red-500">
+                                        {errors.fitness_goal}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="space-y-3">
@@ -383,12 +402,20 @@ export default function Onboarding() {
                                     Experience Level
                                 </Label>
                                 <RadioGroup
-                                    value={experienceLevel}
-                                    onValueChange={(value) => setExperienceLevel(value as ExperienceLevel)}
+                                    value={data.experience_level}
+                                    onValueChange={(value) =>
+                                        setData(
+                                            "experience_level",
+                                            value as ExperienceLevel,
+                                        )
+                                    }
                                     className="space-y-3"
                                 >
                                     {ExperienceLevelOptions.map((option) => (
-                                        <div key={option.value} className="relative">
+                                        <div
+                                            key={option.value}
+                                            className="relative"
+                                        >
                                             <RadioGroupItem
                                                 value={option.value}
                                                 id={option.value}
@@ -399,7 +426,8 @@ export default function Onboarding() {
                                                 className="flex cursor-pointer flex-col gap-1 rounded-md border-2 border-border bg-card p-4 transition-colors peer-data-[state=checked]:border-foreground peer-data-[state=checked]:bg-foreground/5 hover:border-foreground/50"
                                             >
                                                 <span className="font-semibold text-card-foreground">
-                                                    {option.label} ({option.description})
+                                                    {option.label} (
+                                                    {option.description})
                                                 </span>
                                                 <span className="text-sm text-muted-foreground">
                                                     {option.fullDescription}
@@ -408,6 +436,11 @@ export default function Onboarding() {
                                         </div>
                                     ))}
                                 </RadioGroup>
+                                {errors.experience_level && (
+                                    <p className="text-sm text-red-500">
+                                        {errors.experience_level}
+                                    </p>
+                                )}
                             </div>
                         </div>
                     </section>
@@ -432,8 +465,13 @@ export default function Onboarding() {
                                     Training Location
                                 </Label>
                                 <Select
-                                    value={trainingLocation}
-                                    onValueChange={(value) => setTrainingLocation(value as TrainingLocation)}
+                                    value={data.training_location || ""}
+                                    onValueChange={(value) =>
+                                        setData(
+                                            "training_location",
+                                            value as TrainingLocation,
+                                        )
+                                    }
                                 >
                                     <SelectTrigger
                                         id="trainingLocation"
@@ -442,16 +480,23 @@ export default function Onboarding() {
                                         <SelectValue placeholder="Select location" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {TrainingLocationOptions.map((option) => (
-                                            <SelectItem
-                                                key={option.value}
-                                                value={option.value}
-                                            >
-                                                {option.label}
-                                            </SelectItem>
-                                        ))}
+                                        {TrainingLocationOptions.map(
+                                            (option) => (
+                                                <SelectItem
+                                                    key={option.value}
+                                                    value={option.value}
+                                                >
+                                                    {option.label}
+                                                </SelectItem>
+                                            ),
+                                        )}
                                     </SelectContent>
                                 </Select>
+                                {errors.training_location && (
+                                    <p className="text-sm text-red-500">
+                                        {errors.training_location}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="space-y-3">
@@ -466,7 +511,7 @@ export default function Onboarding() {
                                         >
                                             <Checkbox
                                                 id={option.value}
-                                                checked={selectedDays.includes(
+                                                checked={data.workout_days.includes(
                                                     option.value,
                                                 )}
                                                 onCheckedChange={() =>
@@ -482,6 +527,11 @@ export default function Onboarding() {
                                         </div>
                                     ))}
                                 </div>
+                                {errors.workout_days && (
+                                    <p className="text-sm text-red-500">
+                                        {errors.workout_days}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="space-y-2">
@@ -494,12 +544,17 @@ export default function Onboarding() {
                                 <Input
                                     id="reminderTime"
                                     type="time"
-                                    value={reminderTime}
+                                    value={data.reminder_time || ""}
                                     onChange={(e) =>
-                                        setReminderTime(e.target.value)
+                                        setData("reminder_time", e.target.value)
                                     }
                                     className="border-border bg-card text-card-foreground"
                                 />
+                                {errors.reminder_time && (
+                                    <p className="text-sm text-red-500">
+                                        {errors.reminder_time}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="flex items-center justify-between rounded-md border border-border bg-card p-4">
@@ -516,8 +571,15 @@ export default function Onboarding() {
                                 </div>
                                 <Switch
                                     id="motivation"
-                                    checked={receiveMotivation}
-                                    onCheckedChange={setReceiveMotivation}
+                                    checked={
+                                        data.receive_motivation_messages
+                                    }
+                                    onCheckedChange={(checked) =>
+                                        setData(
+                                            "receive_motivation_messages",
+                                            checked,
+                                        )
+                                    }
                                 />
                             </div>
                         </div>
@@ -538,9 +600,12 @@ export default function Onboarding() {
                             <div className="flex items-start gap-3">
                                 <Checkbox
                                     id="consent1"
-                                    checked={consent1}
+                                    checked={data.consent_whatsapp}
                                     onCheckedChange={(checked) =>
-                                        setConsent1(checked as boolean)
+                                        setData(
+                                            "consent_whatsapp",
+                                            checked as boolean,
+                                        )
                                     }
                                 />
                                 <Label
@@ -554,13 +619,21 @@ export default function Onboarding() {
                                     </span>
                                 </Label>
                             </div>
+                            {errors.consent_whatsapp && (
+                                <p className="text-sm text-red-500">
+                                    {errors.consent_whatsapp}
+                                </p>
+                            )}
 
                             <div className="flex items-start gap-3">
                                 <Checkbox
                                     id="consent2"
-                                    checked={consent2}
+                                    checked={data.consent_data_usage}
                                     onCheckedChange={(checked) =>
-                                        setConsent2(checked as boolean)
+                                        setData(
+                                            "consent_data_usage",
+                                            checked as boolean,
+                                        )
                                     }
                                 />
                                 <Label
@@ -574,6 +647,11 @@ export default function Onboarding() {
                                     </span>
                                 </Label>
                             </div>
+                            {errors.consent_data_usage && (
+                                <p className="text-sm text-red-500">
+                                    {errors.consent_data_usage}
+                                </p>
+                            )}
                         </div>
                     </section>
 
@@ -582,10 +660,14 @@ export default function Onboarding() {
                         <Button
                             type="submit"
                             size="lg"
-                            disabled={isSubmitting || !consent1 || !consent2}
+                            disabled={
+                                processing ||
+                                !data.consent_whatsapp ||
+                                !data.consent_data_usage
+                            }
                             className="min-w-[200px] bg-foreground text-background hover:bg-foreground/90"
                         >
-                            {isSubmitting
+                            {processing
                                 ? "Creating Account..."
                                 : "Complete Onboarding"}
                         </Button>
