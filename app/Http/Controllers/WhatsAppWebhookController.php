@@ -47,7 +47,6 @@ class WhatsAppWebhookController extends Controller
         $value = $data['entry'][0]['changes'][0]['value'];
         logger()->info('Processing WhatsApp webhook value', $value);
 
-
         // Handle different webhook types
         if (isset($value['messages'])) {
             $userExists = User::where('whatsapp_number', $value['from'])->exists();
@@ -75,6 +74,14 @@ class WhatsAppWebhookController extends Controller
         // Check if we've already processed this message (prevent duplicates)
         if (Conversation::where('whatsapp_message_id', $messageId)->exists()) {
             Log::info('Duplicate message detected, skipping', ['message_id' => $messageId]);
+            return;
+        }
+
+        if (User::where('whatsapp_number', $from)->doesntExist()) {
+            $this->whatsappService->sendMessage(
+                $from,
+                "Hi! It looks like you're new here. Please sign up on our website to get started with your fitness journey! Go to: " . config('app.url') . "/onboarding"
+            );
             return;
         }
 
