@@ -29,14 +29,20 @@ class WorkoutPlanController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator->errors());
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
         }
 
         // Get authenticated user
         $user = $request->user();
 
         if (!$user) {
-            return back()->withErrors(['error' => 'You must be logged in to create a workout plan']);
+            return response()->json([
+                'success' => false,
+                'error' => 'Unauthorized'
+            ], 401);
         }
 
         try {
@@ -68,15 +74,22 @@ class WorkoutPlanController extends Controller
                 'plan_id' => $workoutPlan->id,
             ]);
 
-            // Return with Inertia, sharing the generated plan
-            return back()->with('generatedPlan', $workoutPlan->load('planExercises.exercise'));
+            // Return JSON with the generated plan
+            return response()->json([
+                'success' => true,
+                'message' => 'Workout plan generated successfully',
+                'workout_plan' => $workoutPlan->load('planExercises.exercise')
+            ], 201);
         } catch (\Exception $e) {
             Log::error('Failed to generate workout plan', [
                 'user_id' => $user->id,
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->withErrors(['error' => 'Failed to generate workout plan: ' . $e->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to generate workout plan: ' . $e->getMessage()
+            ], 500);
         }
     }
 
@@ -148,12 +161,18 @@ class WorkoutPlanController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return back()->withErrors($validator->errors());
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
         }
 
         // Verify user owns this plan
         if ($request->user()->id !== $workoutPlan->user_id) {
-            return back()->withErrors(['error' => 'Unauthorized']);
+            return response()->json([
+                'success' => false,
+                'error' => 'Unauthorized'
+            ], 403);
         }
 
         try {
@@ -172,7 +191,10 @@ class WorkoutPlanController extends Controller
                 'plan_id' => $workoutPlan->id,
             ]);
 
-            return back()->with('success', 'Workout plan updated successfully');
+            return response()->json([
+                'success' => true,
+                'message' => 'Workout plan updated successfully'
+            ]);
         } catch (\Exception $e) {
             Log::error('Failed to reorder workout plan', [
                 'user_id' => $request->user()->id,
@@ -180,7 +202,10 @@ class WorkoutPlanController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return back()->withErrors(['error' => 'Failed to update workout plan']);
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to update workout plan'
+            ], 500);
         }
     }
 
