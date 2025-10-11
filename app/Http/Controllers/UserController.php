@@ -15,7 +15,6 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        logger('incoming message');
         $validated = $request->validate([
             'whatsapp_number' => 'required|string|unique:users,whatsapp_number',
             'email' => 'required|email|unique:users,email',
