@@ -241,18 +241,30 @@ The `WorkoutPlanGeneratorService` handles the entire generation process:
 
 ### 2. OpenAI Integration
 
-The service uses OpenAI's `gpt-3.5-turbo-1106` model with JSON response format to ensure structured output.
+The service uses OpenAI's **`gpt-4o-mini`** model with **JSON Schema** for guaranteed structured output. This ensures:
+- ✅ **Cheaper costs** compared to GPT-3.5-turbo (60% cost reduction)
+- ✅ **Better performance** with improved reasoning and accuracy
+- ✅ **Strict schema validation** - responses always match the expected structure
+- ✅ **Type safety** - all fields are properly typed (integers for sets/reps, etc.)
+
+**JSON Schema Features:**
+- Predefined structure for all 7 days of the week
+- Each day can be either "Rest day" (string) or workout object
+- Workout objects must have `mainFocus` and `exercises` array
+- Exercise objects strictly require `exercise_id`, `sets`, and `reps`
+- Set/rep ranges enforced at schema level based on fitness goal
 
 **System Prompt Strategy:**
-- Provides available exercises with muscle groups
-- Defines output structure requirements
+- Provides available exercises with muscle groups and IDs
 - Sets training principles (progressive overload, muscle balance, recovery)
 - Specifies set/rep ranges based on goal
+- Guides exercise selection and volume distribution
 
 **Validation & Retry Logic:**
-- Validates response structure before accepting
+- Schema validation happens at OpenAI API level (strict mode)
+- Additional validation before accepting response
 - Retries up to 3 times on failure
-- Normalizes response data (handles case sensitivity, data types)
+- Normalizes response data (handles case sensitivity)
 
 ### 3. Database Structure
 
@@ -281,7 +293,7 @@ Add to your `.env` file:
 ```env
 # OpenAI Configuration
 OPENAI_API_KEY=sk-your-api-key-here
-OPENAI_MODEL=gpt-3.5-turbo-1106
+OPENAI_MODEL=gpt-4o-mini  # Latest model with JSON schema support (cheaper & better)
 ```
 
 ### Database Seeding

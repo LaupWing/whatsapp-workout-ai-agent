@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Enums\MuscleGroup;
 use App\Enums\WorkoutPlanGoal;
 use App\Enums\WorkoutPlanStatus;
 use App\Models\Exercise;
@@ -95,11 +94,13 @@ class WorkoutPlanGeneratorService
         $daysOfWeek = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'];
 
         // Determine sets and reps based on goal
-        [$minSets, $maxSets, $minReps, $maxReps] = $this->getSetRepRanges($goal, $sessionDuration);
+        [$minSets, $maxSets, $minReps, $maxReps] = $this->getSetRepRanges($goal);
+
+        // Build JSON schema for structured output
+        $jsonSchema = $this->buildJsonSchema($daysOfWeek, $minSets, $maxSets, $minReps, $maxReps);
 
         $systemPrompt = $this->buildSystemPrompt(
             $availableExercises,
-            $daysOfWeek,
             $minSets,
             $maxSets,
             $minReps,
@@ -124,13 +125,19 @@ class WorkoutPlanGeneratorService
                     'Authorization' => 'Bearer ' . config('services.openai.api_key'),
                     'Content-Type' => 'application/json',
                 ])->timeout(60)->post('https://api.openai.com/v1/chat/completions', [
-                    'model' => config('services.openai.model', 'gpt-3.5-turbo-1106'),
-                    'response_format' => ['type' => 'json_object'],
+                    'model' => config('services.openai.model', 'gpt-4o-mini'),
+                    'response_format' => [
+                        'type' => 'json_schema',
+                        'json_schema' => [
+                            'name' => 'workout_plan',
+                            'strict' => true,
+                            'schema' => $jsonSchema,
+                        ],
+                    ],
                     'messages' => [
                         ['role' => 'system', 'content' => $systemPrompt],
                         ['role' => 'user', 'content' => $userPrompt],
                     ],
-                    'max_tokens' => 4000,
                     'temperature' => 0.7,
                 ]);
 
@@ -169,7 +176,7 @@ class WorkoutPlanGeneratorService
     /**
      * Get set and rep ranges based on goal
      */
-    private function getSetRepRanges(?WorkoutPlanGoal $goal, int $sessionDuration): array
+    private function getSetRepRanges(?WorkoutPlanGoal $goal): array
     {
         return match ($goal) {
             WorkoutPlanGoal::STRENGTH => [4, 6, 3, 6],        // Heavy weight, low reps
@@ -181,40 +188,99 @@ class WorkoutPlanGeneratorService
     }
 
     /**
+     * Build JSON schema for structured output
+     */
+    private function buildJsonSchema(array $daysOfWeek, int $minSets, int $maxSets, int $minReps, int $maxReps): array
+    {
+        $dayProperties = [];
+        foreach ($daysOfWeek as $day) {
+            $dayProperties[$day] = [
+                'anyOf' => [
+                    [
+                        'type' => 'string',
+                        'const' => 'Rest day',
+                    ],
+                    [
+                        'type' => 'object',
+                        'properties' => [
+                            'mainFocus' => [
+                                'type' => 'string',
+                                'description' => 'Main muscle groups targeted on this day',
+                            ],
+                            'exercises' => [
+                                'type' => 'array',
+                                'items' => [
+                                    'type' => 'object',
+                                    'properties' => [
+                                        'exercise_id' => [
+                                            'type' => 'integer',
+                                            'description' => 'ID of the exercise from available exercises',
+                                        ],
+                                        'sets' => [
+                                            'type' => 'integer',
+                                            'minimum' => $minSets,
+                                            'maximum' => $maxSets,
+                                        ],
+                                        'reps' => [
+                                            'type' => 'integer',
+                                            'minimum' => $minReps,
+                                            'maximum' => $maxReps,
+                                        ],
+                                    ],
+                                    'required' => ['exercise_id', 'sets', 'reps'],
+                                    'additionalProperties' => false,
+                                ],
+                                'minItems' => 1,
+                            ],
+                        ],
+                        'required' => ['mainFocus', 'exercises'],
+                        'additionalProperties' => false,
+                    ],
+                ],
+            ];
+        }
+
+        return [
+            'type' => 'object',
+            'properties' => $dayProperties,
+            'required' => $daysOfWeek,
+            'additionalProperties' => false,
+        ];
+    }
+
+    /**
      * Build system prompt for OpenAI
      */
     private function buildSystemPrompt(
         array $availableExercises,
-        array $daysOfWeek,
         int $minSets,
         int $maxSets,
         int $minReps,
         int $maxReps
     ): string {
-        $exercisesJson = json_encode($availableExercises);
-        $daysJson = json_encode($daysOfWeek);
+        $exercisesJson = json_encode($availableExercises, JSON_PRETTY_PRINT);
 
         return <<<PROMPT
-You are a professional fitness coach creating personalized workout plans. Use ONLY these exercises: {$exercisesJson}
+You are a professional fitness coach creating personalized workout plans.
 
-Output must be a JSON object with days as keys: {$daysJson}. ALL days must be included.
+Available Exercises:
+{$exercisesJson}
 
-For rest days: use string "Rest day"
-For workout days: use object with:
-- "mainFocus": string describing main muscle groups
-- "exercises": array of exercise objects
+Programming Guidelines:
+- Sets: {$minSets}-{$maxSets} per exercise
+- Reps: {$minReps}-{$maxReps} per exercise
+- Use ONLY exercise_id from the available exercises list
 
-Each exercise object must have:
-- "exercise_id": number (from available exercises)
-- "sets": number ({$minSets}-{$maxSets})
-- "reps": number ({$minReps}-{$maxReps})
+Training Principles:
+1. Progressive overload: Start with compound exercises, end with isolation
+2. Muscle balance: Ensure balanced development to prevent imbalances
+3. Recovery: Don't train the same muscle groups on consecutive days
+4. Exercise selection: Choose exercises appropriate for the target muscle groups
+5. Volume distribution: Adjust number of exercises based on session duration
+6. Safety first: Include appropriate warm-up movements
 
-Rules:
-1. Progressive overload: compound exercises first, isolation last
-2. Balance muscle groups to prevent imbalances
-3. Allow adequate recovery (don't train same muscles consecutive days)
-4. Distribute volume based on session duration
-5. Include warm-up exercises for injury prevention
+For rest days, use the string "Rest day".
+For workout days, provide a mainFocus describing the primary muscle groups and a list of exercises.
 PROMPT;
     }
 
@@ -250,9 +316,8 @@ PROMPT;
      */
     private function validatePlanStructure(array $responseData, array $workoutDays): bool
     {
-        // Convert workout days and response keys to lowercase for comparison
+        // Convert workout days to lowercase for comparison
         $workoutDaysLower = array_map('strtolower', $workoutDays);
-        $responseDaysLower = array_map('strtolower', array_keys($responseData));
 
         // Check if at least one workout day has exercises
         foreach ($workoutDaysLower as $day) {
@@ -329,16 +394,16 @@ PROMPT;
                     'order' => $index + 1,
                     'target_sets' => $exercise['sets'],
                     'target_reps' => $exercise['reps'],
-                    'rest_seconds' => $this->calculateRestTime($exercise['sets'], $exercise['reps']),
+                    'rest_seconds' => $this->calculateRestTime($exercise['reps']),
                 ]);
             }
         }
     }
 
     /**
-     * Calculate rest time based on sets and reps
+     * Calculate rest time based on reps
      */
-    private function calculateRestTime(int $sets, int $reps): int
+    private function calculateRestTime(int $reps): int
     {
         // Heavier sets (low reps) need more rest
         if ($reps <= 6) {
