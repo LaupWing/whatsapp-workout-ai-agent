@@ -37,7 +37,7 @@ Route::group(['prefix' => 'exercises'], function () {
 
 
 
-Route::post('/workout-plans', [WorkoutPlanController::class, 'store'])->middleware('auth:sanctum');
+Route::post('/workout-plans', [WorkoutPlanController::class, 'store']);
 Route::post('/workout-plans/generate', [WorkoutPlanController::class, 'generate']);
 Route::put('/workout-plans/{workoutPlan}/reorder', [WorkoutPlanController::class, 'reorder'])->middleware('auth:sanctum');
 Route::get('/workout-plans/active', [WorkoutPlanController::class, 'getActivePlan']);
