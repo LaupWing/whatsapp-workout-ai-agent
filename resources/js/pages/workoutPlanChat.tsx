@@ -304,28 +304,58 @@ function WorkoutPlanChat() {
 
     const handleSubmitWorkoutPlan = async () => {
         setIsSubmitting(true)
-
+        console.log("Submitting workout plan with:")
+        console.log(
+            JSON.stringify({
+                //         'goal' => 'required|string|in:strength,hypertrophy,endurance,weight_loss,general_fitness',
+                // 'muscle_groups' => 'required|array|min:1',
+                // 'muscle_groups.*' => 'string',
+                // 'primary_focus' => 'nullable|string',
+                // 'session_duration' => 'required|integer|min:15|max:180',
+                // 'workout_days' => 'required|array|min:1|max:7',
+                // 'workout_days.*' => 'string|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
+                goal: selectedGoal,
+                muscle_groups: selectedMuscles,
+                primary_focus:
+                    primaryFocus === "No Preference" ? null : primaryFocus,
+                session_duration: duration,
+                workout_days: selectedDays,
+            }),
+        )
         try {
-            const response = await fetch("/api/workout-plans", {
-                method: "POST",
-                // @ts-ignore
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": getCsrfToken(),
+            const response = await fetch(
+                "http://whatsapp-workout-ai-agent.test/api/workout-plans",
+                {
+                    method: "POST",
+                    // @ts-ignore
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRF-TOKEN": getCsrfToken(),
+                    },
+                    credentials: "same-origin",
+                    body: JSON.stringify({
+                        //         'goal' => 'required|string|in:strength,hypertrophy,endurance,weight_loss,general_fitness',
+                        // 'muscle_groups' => 'required|array|min:1',
+                        // 'muscle_groups.*' => 'string',
+                        // 'primary_focus' => 'nullable|string',
+                        // 'session_duration' => 'required|integer|min:15|max:180',
+                        // 'workout_days' => 'required|array|min:1|max:7',
+                        // 'workout_days.*' => 'string|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
+                        goal: selectedGoal,
+                        muscle_groups: selectedMuscles,
+                        primary_focus:
+                            primaryFocus === "No Preference"
+                                ? null
+                                : primaryFocus,
+                        session_duration: duration,
+                        workout_days: selectedDays,
+                    }),
                 },
-                credentials: "same-origin",
-                body: JSON.stringify({
-                    goal: selectedGoal,
-                    muscle_groups: selectedMuscles,
-                    primary_focus:
-                        primaryFocus === "No Preference" ? null : primaryFocus,
-                    session_duration: duration,
-                    workout_days: selectedDays,
-                }),
-            })
-
+            )
+            console.log("Workout plan response status:", response.status)
+            console.log(response)
             const data = await response.json()
-
+            console.log("Workout plan response data:", data)
             if (!response.ok) {
                 throw new Error(data.error || "Failed to generate workout plan")
             }

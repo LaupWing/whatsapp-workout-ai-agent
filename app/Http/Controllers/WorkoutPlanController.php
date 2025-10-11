@@ -18,6 +18,7 @@ class WorkoutPlanController extends Controller
      */
     public function store(Request $request, WorkoutPlanGeneratorService $generatorService)
     {
+        logger()->info('Creating new workout plan', $request->all());
         $validator = Validator::make($request->all(), [
             'goal' => 'required|string|in:strength,hypertrophy,endurance,weight_loss,general_fitness',
             'muscle_groups' => 'required|array|min:1',
@@ -27,6 +28,7 @@ class WorkoutPlanController extends Controller
             'workout_days' => 'required|array|min:1|max:7',
             'workout_days.*' => 'string|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
         ]);
+        logger()->info('Workout plan validation', [$request->all(), $validator->errors()->toArray()]);
 
         if ($validator->fails()) {
             return response()->json([
