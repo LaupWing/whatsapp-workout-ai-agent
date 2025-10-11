@@ -14,47 +14,70 @@ use Illuminate\Support\Facades\Validator;
 class WorkoutPlanController extends Controller
 {
     /**
-     * Store a new workout plan
+     * Store a new workout plan (with generation)
      */
-    public function store(Request $request)
+    public function store(Request $request, WorkoutPlanGeneratorService $generatorService)
     {
         $validator = Validator::make($request->all(), [
-            'goal' => 'required|string',
-            'muscle_groups' => 'required|array',
+            'goal' => 'required|string|in:strength,hypertrophy,endurance,weight_loss,general_fitness',
+            'muscle_groups' => 'required|array|min:1',
             'muscle_groups.*' => 'string',
             'primary_focus' => 'nullable|string',
             'session_duration' => 'required|integer|min:15|max:180',
+            'workout_days' => 'required|array|min:1|max:7',
+            'workout_days.*' => 'string|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
         ]);
 
         if ($validator->fails()) {
-            return response()->json(['errors' => $validator->errors()], 422);
+            return back()->withErrors($validator->errors());
         }
 
         // Get authenticated user
         $user = $request->user();
 
         if (!$user) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return back()->withErrors(['error' => 'You must be logged in to create a workout plan']);
         }
 
-        // Create workout plan
-        $workoutPlan = WorkoutPlan::create([
-            'user_id' => $user->id,
-            'name' => 'Custom Workout Plan',
-            'description' => 'AI-generated workout plan',
-            'goal' => $request->goal,
-            'status' => WorkoutPlanStatus::ACTIVE,
-            'schedule' => [
-                'muscle_groups' => $request->muscle_groups,
-                'primary_focus' => $request->primary_focus,
-                'session_duration' => $request->session_duration,
-            ],
-        ]);
+        try {
+            // Deactivate current active plans
+            WorkoutPlan::where('user_id', $user->id)
+                ->where('status', WorkoutPlanStatus::ACTIVE)
+                ->update(['status' => WorkoutPlanStatus::COMPLETED]);
 
-        return response()->json([
-            'success' => true,
-            'workout_plan' => $workoutPlan,
-        ], 201);
+            // Parse goal enum
+            $goal = WorkoutPlanGoal::from($request->goal);
+
+            // Determine focus muscles
+            $focusMuscles = $request->primary_focus && $request->primary_focus !== 'No Preference'
+                ? [$request->primary_focus]
+                : $request->muscle_groups;
+
+            // Generate workout plan using AI
+            $workoutPlan = $generatorService->generatePlan(
+                user: $user,
+                workoutDays: $request->workout_days,
+                muscleGroups: $request->muscle_groups,
+                focusMuscles: $focusMuscles,
+                sessionDuration: $request->session_duration,
+                goal: $goal
+            );
+
+            Log::info('Workout plan generated for user', [
+                'user_id' => $user->id,
+                'plan_id' => $workoutPlan->id,
+            ]);
+
+            // Return with Inertia, sharing the generated plan
+            return back()->with('generatedPlan', $workoutPlan->load('planExercises.exercise'));
+        } catch (\Exception $e) {
+            Log::error('Failed to generate workout plan', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->withErrors(['error' => 'Failed to generate workout plan: ' . $e->getMessage()]);
+        }
     }
 
     /**
@@ -110,6 +133,55 @@ class WorkoutPlanController extends Controller
             'plan_name' => $plan->name,
             'exercises' => $exercises,
         ]);
+    }
+
+    /**
+     * Reorder exercises in a workout plan (for drag and drop)
+     */
+    public function reorder(Request $request, WorkoutPlan $workoutPlan)
+    {
+        $validator = Validator::make($request->all(), [
+            'exercises' => 'required|array|min:1',
+            'exercises.*.id' => 'required|integer|exists:workout_plan_exercises,id',
+            'exercises.*.day_of_week' => 'required|string|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
+            'exercises.*.order' => 'required|integer|min:1',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator->errors());
+        }
+
+        // Verify user owns this plan
+        if ($request->user()->id !== $workoutPlan->user_id) {
+            return back()->withErrors(['error' => 'Unauthorized']);
+        }
+
+        try {
+            // Update each exercise
+            foreach ($request->exercises as $exerciseData) {
+                $workoutPlan->planExercises()
+                    ->where('id', $exerciseData['id'])
+                    ->update([
+                        'day_of_week' => $exerciseData['day_of_week'],
+                        'order' => $exerciseData['order'],
+                    ]);
+            }
+
+            Log::info('Workout plan reordered', [
+                'user_id' => $request->user()->id,
+                'plan_id' => $workoutPlan->id,
+            ]);
+
+            return back()->with('success', 'Workout plan updated successfully');
+        } catch (\Exception $e) {
+            Log::error('Failed to reorder workout plan', [
+                'user_id' => $request->user()->id,
+                'plan_id' => $workoutPlan->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return back()->withErrors(['error' => 'Failed to update workout plan']);
+        }
     }
 
     /**

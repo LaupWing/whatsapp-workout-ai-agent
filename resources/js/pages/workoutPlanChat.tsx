@@ -1,25 +1,37 @@
 import React from "react"
 
 import { Button } from "@/components/ui/button"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Label } from "@/components/ui/label"
+import {
+    DayExercises,
+    WorkoutPlanData,
+    WorkoutPlanEditor,
+} from "@/components/WorkoutPlanEditor"
 import {
     MuscleGroup,
     MuscleGroupOptions,
+    WorkoutDay,
+    WorkoutDayOptions,
     WorkoutPlanGoal,
     WorkoutPlanGoalOptions,
 } from "@/types/enums"
-import { router } from "@inertiajs/react"
+import { router, usePage } from "@inertiajs/react"
 import { Edit2 } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 type Message = {
-    type: "ai" | "user" | "choices"
+    type: "ai" | "user" | "choices" | "plan"
     content: string | React.ReactNode
     step?: Step
     editable?: boolean
 }
 
-type Step = "goal" | "muscles" | "focus" | "duration" | "summary"
+type Step = "goal" | "muscles" | "focus" | "days" | "duration" | "summary"
 function WorkoutPlanChat() {
+    const { flash } = usePage<{
+        flash: { generatedPlan?: WorkoutPlanData }
+    }>().props
     const [currentStep, setCurrentStep] = useState<Step>("goal")
     const [messages, setMessages] = useState<Message[]>([
         {
@@ -44,10 +56,34 @@ function WorkoutPlanChat() {
     const [primaryFocus, setPrimaryFocus] = useState<
         MuscleGroup | "No Preference" | null
     >(null)
+    const [selectedDays, setSelectedDays] = useState<WorkoutDay[]>([])
     const [duration, setDuration] = useState<number>(60)
     const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
+    const [generatedPlan, setGeneratedPlan] = useState<WorkoutPlanData | null>(
+        null,
+    )
 
     const durations = [30, 45, 60, 75, 90]
+
+    // Check for generated plan from flash
+    useEffect(() => {
+        if (flash.generatedPlan) {
+            setGeneratedPlan(flash.generatedPlan)
+            setIsSubmitting(false)
+            setMessages((prev) => [
+                ...prev,
+                {
+                    type: "ai",
+                    content:
+                        "🎉 Your workout plan is ready! You can drag and drop exercises between days to customize it.",
+                },
+                {
+                    type: "plan",
+                    content: "workout-plan-editor",
+                },
+            ])
+        }
+    }, [flash.generatedPlan])
 
     const handleGoalSelect = (goal: WorkoutPlanGoal) => {
         setSelectedGoal(goal)
@@ -153,6 +189,34 @@ function WorkoutPlanChat() {
             },
             {
                 type: "ai",
+                content:
+                    "Which days of the week do you want to train? Select at least one day.",
+            },
+            {
+                type: "choices",
+                content: "days-choices",
+                step: "days",
+            },
+        ])
+        setCurrentStep("days")
+    }
+
+    const handleDaysContinue = () => {
+        if (selectedDays.length === 0) return
+
+        const dayLabels = selectedDays.map(
+            (d) => WorkoutDayOptions.find((opt) => opt.value === d)?.label || d,
+        )
+        setMessages((prev) => [
+            ...prev.filter((m) => m.step !== "days"),
+            {
+                type: "user",
+                content: dayLabels.join(", "),
+                step: "days",
+                editable: true,
+            },
+            {
+                type: "ai",
                 content: "How long do you want each workout session to be?",
             },
             {
@@ -162,6 +226,12 @@ function WorkoutPlanChat() {
             },
         ])
         setCurrentStep("duration")
+    }
+
+    const toggleDay = (day: WorkoutDay) => {
+        setSelectedDays((prev) =>
+            prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day],
+        )
     }
 
     const handleDurationSelect = (mins: number) => {
@@ -259,10 +329,11 @@ function WorkoutPlanChat() {
                 primary_focus:
                     primaryFocus === "No Preference" ? null : primaryFocus,
                 session_duration: duration,
+                workout_days: selectedDays,
             },
             {
                 onSuccess: () => {
-                    // Redirect will be handled by backend
+                    // Plan will be shown via flash message
                 },
                 onError: (errors) => {
                     console.error("Error submitting workout plan:", errors)
@@ -270,6 +341,35 @@ function WorkoutPlanChat() {
                         "Failed to create workout plan. Please try again.",
                     )
                     setIsSubmitting(false)
+                },
+            },
+        )
+    }
+
+    const handleSavePlan = (editedPlan: DayExercises[]) => {
+        if (!generatedPlan) return
+
+        // Prepare exercises with updated day and order
+        const updatedExercises = editedPlan.flatMap((dayData, dayIndex) =>
+            dayData.exercises.map((exercise, exerciseIndex) => ({
+                id: exercise.id,
+                day_of_week: dayData.day,
+                order: exerciseIndex + 1,
+            })),
+        )
+
+        router.put(
+            `/api/workout-plans/${generatedPlan.id}/reorder`,
+            {
+                exercises: updatedExercises,
+            },
+            {
+                onSuccess: () => {
+                    alert("✅ Workout plan saved successfully!")
+                },
+                onError: (errors) => {
+                    console.error("Error saving workout plan:", errors)
+                    alert("Failed to save workout plan. Please try again.")
                 },
             },
         )
@@ -347,6 +447,41 @@ function WorkoutPlanChat() {
                         </button>
                     </div>
                 )
+            case "days":
+                return (
+                    <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                            {WorkoutDayOptions.map((option) => (
+                                <div
+                                    key={option.value}
+                                    className="flex items-center gap-2 rounded-md border border-border bg-card p-3"
+                                >
+                                    <Checkbox
+                                        id={option.value}
+                                        checked={selectedDays.includes(option.value)}
+                                        onCheckedChange={() => toggleDay(option.value)}
+                                    />
+                                    <Label
+                                        htmlFor={option.value}
+                                        className="cursor-pointer text-sm text-card-foreground"
+                                    >
+                                        {option.shortLabel}
+                                    </Label>
+                                </div>
+                            ))}
+                        </div>
+                        <div className="flex justify-end">
+                            <Button
+                                onClick={handleDaysContinue}
+                                disabled={selectedDays.length === 0}
+                                size="sm"
+                                className="bg-primary text-primary-foreground hover:bg-primary/90"
+                            >
+                                Continue
+                            </Button>
+                        </div>
+                    </div>
+                )
             case "duration":
                 return (
                     <div className="flex flex-wrap justify-end gap-2">
@@ -390,6 +525,17 @@ function WorkoutPlanChat() {
                                     <div className="max-w-[85%]">
                                         {renderChoices(message.step!)}
                                     </div>
+                                </div>
+                            )
+                        }
+
+                        if (message.type === "plan" && generatedPlan) {
+                            return (
+                                <div key={index} className="w-full">
+                                    <WorkoutPlanEditor
+                                        workoutPlan={generatedPlan}
+                                        onSave={handleSavePlan}
+                                    />
                                 </div>
                             )
                         }
