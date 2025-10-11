@@ -16,7 +16,7 @@ import {
     WorkoutPlanGoal,
     WorkoutPlanGoalOptions,
 } from "@/types/enums"
-import { usePage } from "@inertiajs/react"
+import { router, usePage } from "@inertiajs/react"
 import { Edit2 } from "lucide-react"
 import { useState } from "react"
 
@@ -56,18 +56,11 @@ function WorkoutPlanChat() {
     >(null)
     const [selectedDays, setSelectedDays] = useState<WorkoutDay[]>([])
     const [duration, setDuration] = useState<number>(60)
-    const [isSubmitting, setIsSubmitting] = useState<boolean>(false)
     const [generatedPlan, setGeneratedPlan] = useState<WorkoutPlanData | null>(
         null,
     )
 
     const durations = [30, 45, 60, 75, 90]
-
-    // Get CSRF token
-    const getCsrfToken = () => {
-        const token = document.head.querySelector('meta[name="csrf-token"]')
-        return token ? token.getAttribute("content") : ""
-    }
 
     const handleGoalSelect = (goal: WorkoutPlanGoal) => {
         setSelectedGoal(goal)
@@ -302,91 +295,48 @@ function WorkoutPlanChat() {
         )
     }
 
-    const handleSubmitWorkoutPlan = async () => {
-        setIsSubmitting(true)
-        console.log("Submitting workout plan with:")
-        console.log(
-            JSON.stringify({
-                //         'goal' => 'required|string|in:strength,hypertrophy,endurance,weight_loss,general_fitness',
-                // 'muscle_groups' => 'required|array|min:1',
-                // 'muscle_groups.*' => 'string',
-                // 'primary_focus' => 'nullable|string',
-                // 'session_duration' => 'required|integer|min:15|max:180',
-                // 'workout_days' => 'required|array|min:1|max:7',
-                // 'workout_days.*' => 'string|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
+    const handleSubmitWorkoutPlan = () => {
+        router.post(
+            "/workout-plans",
+            {
                 goal: selectedGoal,
                 muscle_groups: selectedMuscles,
                 primary_focus:
                     primaryFocus === "No Preference" ? null : primaryFocus,
                 session_duration: duration,
                 workout_days: selectedDays,
-            }),
-        )
-        try {
-            const response = await fetch(
-                "http://whatsapp-workout-ai-agent.test/api/workout-plans",
-                {
-                    method: "POST",
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                onSuccess: (page) => {
                     // @ts-ignore
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": getCsrfToken(),
-                    },
-                    credentials: "same-origin",
-                    body: JSON.stringify({
-                        //         'goal' => 'required|string|in:strength,hypertrophy,endurance,weight_loss,general_fitness',
-                        // 'muscle_groups' => 'required|array|min:1',
-                        // 'muscle_groups.*' => 'string',
-                        // 'primary_focus' => 'nullable|string',
-                        // 'session_duration' => 'required|integer|min:15|max:180',
-                        // 'workout_days' => 'required|array|min:1|max:7',
-                        // 'workout_days.*' => 'string|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday',
-                        goal: selectedGoal,
-                        muscle_groups: selectedMuscles,
-                        primary_focus:
-                            primaryFocus === "No Preference"
-                                ? null
-                                : primaryFocus,
-                        session_duration: duration,
-                        workout_days: selectedDays,
-                    }),
+                    const data = page.props.flash as any
+                    if (data?.success && data?.workout_plan) {
+                        setGeneratedPlan(data.workout_plan)
+                        setMessages((prev) => [
+                            ...prev,
+                            {
+                                type: "ai",
+                                content:
+                                    "🎉 Your workout plan is ready! You can drag and drop exercises between days to customize it.",
+                            },
+                            {
+                                type: "plan",
+                                content: "workout-plan-editor",
+                            },
+                        ])
+                    }
                 },
-            )
-            console.log("Workout plan response status:", response.status)
-            console.log(response)
-            const data = await response.json()
-            console.log("Workout plan response data:", data)
-            if (!response.ok) {
-                throw new Error(data.error || "Failed to generate workout plan")
-            }
-
-            // Set the generated plan and show it
-            setGeneratedPlan(data.workout_plan)
-            setMessages((prev) => [
-                ...prev,
-                {
-                    type: "ai",
-                    content:
-                        "🎉 Your workout plan is ready! You can drag and drop exercises between days to customize it.",
+                onError: (errors) => {
+                    console.error("Error creating workout plan:", errors)
+                    alert("Failed to create workout plan. Please try again.")
                 },
-                {
-                    type: "plan",
-                    content: "workout-plan-editor",
-                },
-            ])
-            setIsSubmitting(false)
-        } catch (error) {
-            console.error("Error submitting workout plan:", error)
-            alert(
-                error instanceof Error
-                    ? error.message
-                    : "Failed to create workout plan. Please try again.",
-            )
-            setIsSubmitting(false)
-        }
+            },
+        )
     }
 
-    const handleSavePlan = async (editedPlan: DayExercises[]) => {
+    const handleSavePlan = (editedPlan: DayExercises[]) => {
         if (!generatedPlan) return
 
         // Prepare exercises with updated day and order
@@ -398,38 +348,23 @@ function WorkoutPlanChat() {
             })),
         )
 
-        try {
-            const response = await fetch(
-                `/api/workout-plans/${generatedPlan.id}/reorder`,
-                {
-                    method: "PUT",
-                    // @ts-ignore
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": getCsrfToken(),
-                    },
-                    credentials: "same-origin",
-                    body: JSON.stringify({
-                        exercises: updatedExercises,
-                    }),
+        router.put(
+            `/workout-plans/${generatedPlan.id}/reorder`,
+            {
+                exercises: updatedExercises,
+            },
+            {
+                preserveState: true,
+                preserveScroll: true,
+                onSuccess: () => {
+                    alert("✅ Workout plan saved successfully!")
                 },
-            )
-
-            const data = await response.json()
-
-            if (!response.ok) {
-                throw new Error(data.error || "Failed to save workout plan")
-            }
-
-            alert("✅ Workout plan saved successfully!")
-        } catch (error) {
-            console.error("Error saving workout plan:", error)
-            alert(
-                error instanceof Error
-                    ? error.message
-                    : "Failed to save workout plan. Please try again.",
-            )
-        }
+                onError: (errors) => {
+                    console.error("Error saving workout plan:", errors)
+                    alert("Failed to save workout plan. Please try again.")
+                },
+            },
+        )
     }
     const renderChoices = (step: Step) => {
         switch (step) {
@@ -562,12 +497,9 @@ function WorkoutPlanChat() {
                     <div className="flex justify-end">
                         <Button
                             onClick={handleSubmitWorkoutPlan}
-                            disabled={isSubmitting}
                             className="bg-primary text-primary-foreground hover:bg-primary/90"
                         >
-                            {isSubmitting
-                                ? "Creating..."
-                                : "Generate My Workout Plan"}
+                            Generate My Workout Plan
                         </Button>
                     </div>
                 )

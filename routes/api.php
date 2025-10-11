@@ -37,12 +37,6 @@ Route::group(['prefix' => 'exercises'], function () {
 
 
 
-// Web-based workout plan routes (session auth for Inertia frontend)
-Route::middleware('web')->group(function () {
-    Route::post('/workout-plans', [WorkoutPlanController::class, 'store'])->middleware('auth');
-    Route::put('/workout-plans/{workoutPlan}/reorder', [WorkoutPlanController::class, 'reorder'])->middleware('auth');
-});
-
 // API-based workout plan routes (for ADK agent and external access)
 Route::post('/workout-plans/generate', [WorkoutPlanController::class, 'generate']);
 Route::get('/workout-plans/active', [WorkoutPlanController::class, 'getActivePlan']);

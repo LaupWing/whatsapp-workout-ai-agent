@@ -76,22 +76,21 @@ class WorkoutPlanController extends Controller
                 'plan_id' => $workoutPlan->id,
             ]);
 
-            // Return JSON with the generated plan
-            return response()->json([
+            // Return with flash session data for Inertia
+            return back()->with([
                 'success' => true,
                 'message' => 'Workout plan generated successfully',
                 'workout_plan' => $workoutPlan->load('planExercises.exercise')
-            ], 201);
+            ]);
         } catch (\Exception $e) {
             Log::error('Failed to generate workout plan', [
                 'user_id' => $user->id,
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
+            return back()->withErrors([
                 'error' => 'Failed to generate workout plan: ' . $e->getMessage()
-            ], 500);
+            ]);
         }
     }
 
@@ -193,7 +192,7 @@ class WorkoutPlanController extends Controller
                 'plan_id' => $workoutPlan->id,
             ]);
 
-            return response()->json([
+            return back()->with([
                 'success' => true,
                 'message' => 'Workout plan updated successfully'
             ]);
@@ -204,10 +203,9 @@ class WorkoutPlanController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
-                'success' => false,
+            return back()->withErrors([
                 'error' => 'Failed to update workout plan'
-            ], 500);
+            ]);
         }
     }
 

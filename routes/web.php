@@ -18,6 +18,14 @@ Route::get('/workout-plan-chat', function () {
     return Inertia::render('workoutPlanChat');
 })->middleware('auth')->name('workout-plan-chat');
 
+// Workout plan routes for Inertia frontend (with CSRF protection)
+Route::middleware('auth')->group(function () {
+    Route::post('/workout-plans', [\App\Http\Controllers\WorkoutPlanController::class, 'store'])
+        ->name('workout-plans.store');
+    Route::put('/workout-plans/{workoutPlan}/reorder', [\App\Http\Controllers\WorkoutPlanController::class, 'reorder'])
+        ->name('workout-plans.reorder');
+});
+
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
         return Inertia::render('dashboard');
