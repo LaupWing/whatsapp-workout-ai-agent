@@ -1,3 +1,4 @@
+import { ThemeToggle } from "@/components/theme-toggle"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
@@ -11,7 +12,6 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
-import { ThemeToggle } from "@/components/theme-toggle"
 import {
     ExperienceLevel,
     ExperienceLevelOptions,
@@ -64,7 +64,7 @@ export default function Onboarding() {
         <main className="min-h-screen bg-background">
             <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
                 <div className="mb-12 text-center">
-                    <div className="flex justify-end mb-4">
+                    <div className="mb-4 flex justify-end">
                         <ThemeToggle />
                     </div>
                     <h1 className="text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
@@ -571,9 +571,7 @@ export default function Onboarding() {
                                 </div>
                                 <Switch
                                     id="motivation"
-                                    checked={
-                                        data.receive_motivation_messages
-                                    }
+                                    checked={data.receive_motivation_messages}
                                     onCheckedChange={(checked) =>
                                         setData(
                                             "receive_motivation_messages",

@@ -15,6 +15,7 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
+        logger()->info('Storing new user', $request->all());
         $validated = $request->validate([
             'whatsapp_number' => 'required|string|unique:users,whatsapp_number',
             'email' => 'required|email|unique:users,email',

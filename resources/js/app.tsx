@@ -1,12 +1,23 @@
 import "../css/app.css"
 
-import { createInertiaApp } from "@inertiajs/react"
+import { createInertiaApp, router } from "@inertiajs/react"
 import { resolvePageComponent } from "laravel-vite-plugin/inertia-helpers"
 import { createRoot } from "react-dom/client"
-import { initializeTheme } from "./hooks/use-appearance"
 import { ThemeProvider } from "./components/theme-provider"
+import { initializeTheme } from "./hooks/use-appearance"
 
 const appName = import.meta.env.VITE_APP_NAME || "Laravel"
+
+// Configure Inertia to include CSRF token in requests
+router.on("before", (event) => {
+    const token = document.head.querySelector('meta[name="csrf-token"]')
+    if (token && event.detail.visit.method !== "get") {
+        event.detail.visit.headers = {
+            ...event.detail.visit.headers,
+            "X-CSRF-TOKEN": token.getAttribute("content") ?? "",
+        }
+    }
+})
 
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
