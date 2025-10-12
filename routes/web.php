@@ -15,6 +15,9 @@ Route::get('/onboarding', function () {
 Route::post('/onboarding', [UserController::class, 'store'])->name('onboarding.store');
 
 Route::get('/workout-plan-chat', function () {
+
+    // logger(auth()->user() ? 'Rendering workout plan chat view' : 'No authenticated user');
+    // logger(auth()->user());
     return Inertia::render('workoutPlanChat');
 })->middleware('auth')->name('workout-plan-chat');
 
