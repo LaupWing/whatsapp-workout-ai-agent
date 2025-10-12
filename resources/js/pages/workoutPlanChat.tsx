@@ -16,7 +16,7 @@ import {
     WorkoutPlanGoal,
     WorkoutPlanGoalOptions,
 } from "@/types/enums"
-import { router, usePage } from "@inertiajs/react"
+import { useForm, usePage } from "@inertiajs/react"
 import { Edit2 } from "lucide-react"
 import { useState } from "react"
 
@@ -59,6 +59,24 @@ function WorkoutPlanChat() {
     const [generatedPlan, setGeneratedPlan] = useState<WorkoutPlanData | null>(
         null,
     )
+
+    // Form for creating workout plan
+    const { data, setData, post, processing } = useForm({
+        goal: null as WorkoutPlanGoal | null,
+        muscle_groups: [] as MuscleGroup[],
+        primary_focus: null as MuscleGroup | null,
+        session_duration: 60,
+        workout_days: [] as WorkoutDay[],
+    })
+
+    // Form for reordering exercises
+    const reorderForm = useForm({
+        exercises: [] as Array<{
+            id: number
+            day_of_week: string
+            order: number
+        }>,
+    })
 
     const durations = [30, 45, 60, 75, 90]
 
@@ -296,44 +314,44 @@ function WorkoutPlanChat() {
     }
 
     const handleSubmitWorkoutPlan = () => {
-        router.post(
-            "/workout-plans",
-            {
-                goal: selectedGoal,
-                muscle_groups: selectedMuscles,
-                primary_focus:
-                    primaryFocus === "No Preference" ? null : primaryFocus,
-                session_duration: duration,
-                workout_days: selectedDays,
+        // Update form data with current state
+        setData({
+            goal: selectedGoal,
+            muscle_groups: selectedMuscles,
+            primary_focus:
+                primaryFocus === "No Preference" ? null : primaryFocus,
+            session_duration: duration,
+            workout_days: selectedDays,
+        })
+
+        // Submit using useForm's post method
+        post("/workout-plans", {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: (page) => {
+                // @ts-ignore
+                const flash = page.props.flash as any
+                if (flash?.success && flash?.workout_plan) {
+                    setGeneratedPlan(flash.workout_plan)
+                    setMessages((prev) => [
+                        ...prev,
+                        {
+                            type: "ai",
+                            content:
+                                "🎉 Your workout plan is ready! You can drag and drop exercises between days to customize it.",
+                        },
+                        {
+                            type: "plan",
+                            content: "workout-plan-editor",
+                        },
+                    ])
+                }
             },
-            {
-                preserveState: true,
-                preserveScroll: true,
-                onSuccess: (page) => {
-                    // @ts-ignore
-                    const flash = page.props.flash as any
-                    if (flash?.success && flash?.workout_plan) {
-                        setGeneratedPlan(flash.workout_plan)
-                        setMessages((prev) => [
-                            ...prev,
-                            {
-                                type: "ai",
-                                content:
-                                    "🎉 Your workout plan is ready! You can drag and drop exercises between days to customize it.",
-                            },
-                            {
-                                type: "plan",
-                                content: "workout-plan-editor",
-                            },
-                        ])
-                    }
-                },
-                onError: (errors) => {
-                    console.error("Error creating workout plan:", errors)
-                    alert("Failed to create workout plan. Please try again.")
-                },
+            onError: (errors) => {
+                console.error("Error creating workout plan:", errors)
+                alert("Failed to create workout plan. Please try again.")
             },
-        )
+        })
     }
 
     const handleSavePlan = (editedPlan: DayExercises[]) => {
@@ -348,23 +366,19 @@ function WorkoutPlanChat() {
             })),
         )
 
-        router.put(
-            `/workout-plans/${generatedPlan.id}/reorder`,
-            {
-                exercises: updatedExercises,
+        // Update form data and submit
+        reorderForm.setData("exercises", updatedExercises)
+        reorderForm.put(`/workout-plans/${generatedPlan.id}/reorder`, {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                alert("✅ Workout plan saved successfully!")
             },
-            {
-                preserveState: true,
-                preserveScroll: true,
-                onSuccess: () => {
-                    alert("✅ Workout plan saved successfully!")
-                },
-                onError: (errors) => {
-                    console.error("Error saving workout plan:", errors)
-                    alert("Failed to save workout plan. Please try again.")
-                },
+            onError: (errors) => {
+                console.error("Error saving workout plan:", errors)
+                alert("Failed to save workout plan. Please try again.")
             },
-        )
+        })
     }
     const renderChoices = (step: Step) => {
         switch (step) {
