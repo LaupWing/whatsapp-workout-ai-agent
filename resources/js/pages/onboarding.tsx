@@ -29,21 +29,21 @@ import { useForm } from "@inertiajs/react"
 export default function Onboarding() {
     const { data, setData, post, processing, errors } = useForm({
         whatsapp_number: "+1 234 567 8900",
-        email: "",
-        name: "",
-        gender: null as Gender | null,
-        age: null as number | null,
-        height: null as number | null,
-        current_weight: null as number | null,
-        target_weight: null as number | null,
-        fitness_goal: null as FitnessGoal | null,
+        email: "loc@example.com",
+        name: "Loc Nguyen",
+        gender: "Male" as Gender | null,
+        age: 29 as number | null,
+        height: 170 as number | null,
+        current_weight: 75 as number | null,
+        target_weight: 65 as number | null,
+        fitness_goal: "strength" as FitnessGoal | null,
         experience_level: ExperienceLevel.BEGINNER,
-        training_location: null as TrainingLocation | null,
-        workout_days: [] as WorkoutDay[],
+        training_location: "home_with_dumbbell" as TrainingLocation | null,
+        workout_days: ["monday", "wednesday", "friday"] as WorkoutDay[],
         reminder_time: null as string | null,
         receive_motivation_messages: true,
-        consent_whatsapp: false,
-        consent_data_usage: false,
+        consent_whatsapp: true,
+        consent_data_usage: true,
     })
 
     const toggleDay = (day: WorkoutDay) => {
