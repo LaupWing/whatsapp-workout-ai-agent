@@ -296,8 +296,10 @@ function WorkoutPlanChat() {
     }
 
     const handleSubmitWorkoutPlan = () => {
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
-
+        const csrfToken = document
+            .querySelector('meta[name="csrf-token"]')
+            ?.getAttribute("content")
+        console.log("Submitting workout plan with:")
         router.post(
             "/workout-plans",
             {
@@ -310,7 +312,7 @@ function WorkoutPlanChat() {
             },
             {
                 headers: {
-                    'X-CSRF-TOKEN': csrfToken || '',
+                    "X-CSRF-TOKEN": csrfToken || "",
                 },
                 preserveState: true,
                 preserveScroll: true,
@@ -344,7 +346,9 @@ function WorkoutPlanChat() {
     const handleSavePlan = (editedPlan: DayExercises[]) => {
         if (!generatedPlan) return
 
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+        const csrfToken = document
+            .querySelector('meta[name="csrf-token"]')
+            ?.getAttribute("content")
 
         // Prepare exercises with updated day and order
         const updatedExercises = editedPlan.flatMap((dayData) =>
@@ -362,7 +366,7 @@ function WorkoutPlanChat() {
             },
             {
                 headers: {
-                    'X-CSRF-TOKEN': csrfToken || '',
+                    "X-CSRF-TOKEN": csrfToken || "",
                 },
                 preserveState: true,
                 preserveScroll: true,

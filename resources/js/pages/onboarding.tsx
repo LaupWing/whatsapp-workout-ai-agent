@@ -31,7 +31,7 @@ export default function Onboarding() {
         whatsapp_number: "+1 234 567 8900",
         email: "loc@example.com",
         name: "Loc Nguyen",
-        gender: "Male" as Gender | null,
+        gender: "male" as Gender | null,
         age: 29 as number | null,
         height: 170 as number | null,
         current_weight: 75 as number | null,
